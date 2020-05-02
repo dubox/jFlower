@@ -25,7 +25,7 @@ window.detectDevice = function(){
             ips.push(ip);
           }).on('error', (err) => {});
     }
-    
+    return ips;
 };
 
 // Server has a 5 seconds keep-alive timeout by default
