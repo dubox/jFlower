@@ -4,6 +4,11 @@ var os = require('os');
 
 var app = window.app = {};
 
+
+function toast(msg,code){
+    utools.showNotification(msg);
+}
+
 //获取内网ip
 function getLocalIp(){
     var map = [];  
@@ -80,17 +85,19 @@ window.http = function(){
     
 }
 
-var sendText = function(ip,text){
+var sendText = function(ip,text,cb){
     let url = `http://${ip}:8891/text?${text}`;
     console.log(url);
     http.get(url, (res) => {
         res.resume();
+        cb(0);
       }).on('error', (err) => {
+          cb(err);
     });
 };
 
 
-utools.showNotification(`本机ip：${getLocalIp()}`, clickFeatureCode = '123', silent = true);
+toast(`本机ip：${getLocalIp()}`, clickFeatureCode = '123', silent = true);
    
 
 
@@ -106,10 +113,25 @@ http.get('http://127.0.0.1:8891', (res) => {
           }
           console.log(req);
           let text = req.url.split('?');
-          text =  decodeURI(text[1]);
+          if(text[0] == '/text'){
+            text =  decodeURI(text[1]);
+            
+            //utools.copyText(text);
+            //toast(`"${text}"已复制到剪贴板`);
+            let userChoose = utools.showMessageBox({
+                type: 'question',
+                buttons: ['忽略', '复制到剪贴板'],
+                title: '来自***的消息',
+                message: text,
+                defaultId: 1
+              });
+              if(userChoose){
+                utools.copyText(text);
+                utools.hideMainWindow();
+              }
+
+          }
         res.write('hello\n');
-        utools.copyText(text)
-        utools.showNotification(`"${text}"已复制到剪贴板`);
         res.end();
     }).listen(8891); //ipv6 ,'::'
 });
@@ -120,5 +142,12 @@ http.get('http://127.0.0.1:8891', (res) => {
 
 utools.onPluginEnter(({code, type, payload, optional}) => {
     console.log('用户进入插件', code, type, payload);
-    sendText(code,payload);
+    sendText(code,payload,function(err){
+        if(err){
+            toast('error');
+        }else{
+            toast('发送成功');
+            utools.outPlugin();
+        }
+    });
 })
