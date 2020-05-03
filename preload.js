@@ -116,20 +116,20 @@ http.get('http://127.0.0.1:8891', (res) => {
           if(text[0] == '/text'){
             text =  decodeURI(text[1]);
             
-            //utools.copyText(text);
-            //toast(`"${text}"已复制到剪贴板`);
-            let userChoose = utools.showMessageBox({
-                type: 'question',
-                buttons: ['忽略', '复制到剪贴板'],
-                title: '来自***的消息',
-                message: text,
-                defaultId: 1
-              });
-              if(userChoose){
-                utools.copyText(text);
-                utools.hideMainWindow();
-              }
-
+            utools.copyText(text);
+            toast(`"${text}"已复制到剪贴板`);
+            // let userChoose = utools.showMessageBox({
+            //     type: 'question',
+            //     buttons: ['忽略', '复制到剪贴板'],
+            //     title: '来自***的消息',
+            //     message: text,
+            //     defaultId: 1
+            //   });
+            //   if(userChoose){
+            //     utools.copyText(text);
+            //     
+            //   }
+            utools.hideMainWindow();
           }
         res.write('hello\n');
         res.end();
