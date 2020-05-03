@@ -7,20 +7,22 @@
 	    {
 			"code": "jFlower",
 			"explain": "jFlower(局发)",
-	        "cmds":["jFlower", "局发"]
-		},
+			"cmds":["jFlower", "局发",
+				{
+					"type": "window",
+					"label": "窗口动作",
+					
+					"match": {
+					  
+					   "app": ["Finder.app"]
+					  
+					}
+				}
+			]
+		}
 		
 		
-            {
-                "type": "window",
-                "label": "窗口动作",
-                
-                "match": {
-                  
-                   "app": "Finder"
-                  
-                }
-            }
+            
 	],
 	"preload":"preload.js"
 }
