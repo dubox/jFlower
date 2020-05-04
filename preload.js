@@ -127,9 +127,9 @@ http.get('http://127.0.0.1:8891', (res) => {
             //   });
             //   if(userChoose){
             //     utools.copyText(text);
-            //     
+            //     utools.hideMainWindow();
             //   }
-            utools.hideMainWindow();
+            
           }
         res.write('hello\n');
         res.end();
@@ -147,7 +147,8 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
             toast('error');
         }else{
             toast('发送成功');
-            utools.outPlugin();
+            //utools.outPlugin();
+            utools.hideMainWindow();
         }
     });
 })
