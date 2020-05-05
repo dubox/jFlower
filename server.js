@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+var Utils = require('./utils');
 
 var server = {
 
@@ -36,6 +37,8 @@ var server = {
                             _this.onText(url[1] || '');
                         }else if(cmd == '/file'){
                             _this.onFile(req);
+                        }else if(cmd == '/img'){
+                            _this.onImg(req);
                         }else if(cmd == '/share'){
 
                         }else{res.write('hello\n');}
@@ -44,11 +47,20 @@ var server = {
                     }).listen(8891); //ipv6 ,'::'
                
     },
-    onText : function(text){
-        text =  decodeURI(text);
-                            
-        utools.copyText(text);
-        toast(`"${text}"已复制到剪贴板`);
+    onText : function(req){
+       
+        req.setEncoding('utf8');
+        let rawData = '';
+        req.on('data', (chunk) => { rawData += chunk; });
+        req.on('end', () => {
+            if(/^https{0,1}:\/\/.+/.test(rawData)){
+                utools.shellOpenExternal(rawData);
+            }else{
+                utools.copyText(rawData);
+                toast(`"${text}"已复制到剪贴板`);
+            }
+            
+        });
         // let userChoose = utools.showMessageBox({
         //     type: 'question',
         //     buttons: ['忽略', '复制到剪贴板'],
@@ -64,6 +76,15 @@ var server = {
     onFile : function(req){
         var fstream = fs.createWriteStream(utools.getPath('downloads')+path.sep+'a.txt');console.log(fstream);
         req.pipe(fstream);
+        
+    },
+    onImg : function(req){
+        req.setEncoding('utf8');
+        let rawData = '';
+        req.on('data', (chunk) => { rawData += chunk; });
+        req.on('end', () => {
+            utools.copyImage(rawData);
+        });
         
     }
 };

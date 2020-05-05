@@ -20,25 +20,11 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
     if(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)){
 
         if(type == 'files'){
-            Clients.sendFile(code,payload,function(err){
-                if(err){
-                    Utils.toast('error');
-                }else{
-                    Utils.toast('发送成功');
-                    //utools.outPlugin();
-                    utools.hideMainWindow();
-                }
-            });
+            Clients.sendFile(code,payload,Clients.sentCallback);
+        }else if(type == 'img'){
+            Clients.sendImg(code,payload,fClients.sentCallback);
         }else{
-            Clients.sendText(code,payload,function(err){
-                if(err){
-                    Utils.toast('error');
-                }else{
-                    Utils.toast('发送成功');
-                    //utools.outPlugin();
-                    utools.hideMainWindow();
-                }
-            });
+            Clients.sendText(code,payload,Clients.sentCallback);
         }
 
        

@@ -57,7 +57,13 @@ module.exports = {
                     "minNum": 1,
                     // 数量限制（不多于） (可选)
                     "maxNum": 1
-                  }
+                  },
+                  {
+                    // 类型，可能的值（img, files, regex, over）
+                    "type": "img",
+                    // 文字说明，在搜索列表中出现（必须）
+                    "label": "图片匹配"
+                 },
             ]
           })
     },
