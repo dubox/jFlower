@@ -4,7 +4,7 @@ var Utils = require('./utils');
 
 module.exports = {
     sendText : function(ip,text,cb){
-      var req = this.sender('text',ip , text.length ,cb)
+      var req = this.sender('text',ip , new Buffer(text).length ,cb)
         req.write(text,'utf8',() => {req.end();});//
     },
     sendFile:function(ip , files ,cb ){
