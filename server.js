@@ -31,6 +31,7 @@ var server = {
                             return;
                         }
                         console.log(req);
+                        res.on('end', () => {console.log('res end'); });
                         //var url = req.url.split('?');
                         var cmd = req.url;
                         if(cmd == '/text'){
@@ -57,7 +58,7 @@ var server = {
                 utools.shellOpenExternal(rawData);
             }else{
                 utools.copyText(rawData);
-                Utils.toast(`"${text}"已复制到剪贴板`);
+                Utils.toast(`"${rawData}"已复制到剪贴板`);
             }
             res.end();
         });
@@ -74,7 +75,7 @@ var server = {
         //   }
     },
     onFile : function(req ,res){
-        var target_file = utools.getPath('downloads')+path.sep+req.headers.file_name;
+        var target_file = utools.getPath('downloads')+path.sep+decodeURI(req.headers.file_name);
         if(fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()){
             Utils.toast(`[err]"${req.headers.file_name}"是一个目录`);
             res.end();
@@ -82,7 +83,9 @@ var server = {
             //req.pipe(fs.createWriteStream(target_file));
             var ws = fs.createWriteStream(target_file);
             req.on('data', (chunk) => { ws.write(chunk);});
-            req.on('end', () => {console.log('end');res.end();
+            req.on('end', () => {
+                ws.end();
+                res.end();
                 //utools.copyImage(rawData);
             });
         }

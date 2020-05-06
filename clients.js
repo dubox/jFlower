@@ -4,27 +4,30 @@ var Utils = require('./utils');
 
 module.exports = {
     sendText : function(ip,text,cb){
-      this.sender('text',ip , text.length ,cb).write(text,'utf8');
+      var req = this.sender('text',ip , text.length ,cb)
+        req.write(text,'utf8',() => {req.end();});//
     },
     sendFile:function(ip , files ,cb ){
         var file = files[0];
        console.log('file');
        let size = fs.statSync(file.path).size;console.log('size:',size);
-        //fs.createReadStream(file.path).pipe(this.sender('file',ip , size ,cb,{file_name:file.name}));console.log('www')
-        var req = this.sender('file',ip , size ,cb,{file_name:file.name})
-        var readstream = fs.createReadStream(file.path);
-        readstream.on('data', function(chunk) {
+       //fs.createReadStream(file.path).pipe(this.sender('file',ip , size ,cb,{file_name:file.name}));
+                                                          //文件名使用url转码，否则在header中会有问题
+        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(file.name)});console.log(req);
+        var rs = fs.createReadStream(file.path);console.log(rs);
+        rs.on('data', function(chunk) {
           console.log('write', chunk.length);
           req.write(chunk);
-      });
-      readstream.on('end', function() {
-          req.end();
-      });
+        });
+        rs.on('end', function() {console.log('rs end');
+            req.end();
+        });
           //req.end();
     },
     sendImg:function(ip , img ,cb){
       
-        this.sender('img',ip , img.length ,cb).write(img,'utf8');//,() => {req.end();}
+        var req = this.sender('img',ip , img.length ,cb)
+        req.write(img,'utf8',() => {req.end();});//
     },
   sender:function(type,ip,data_size,cb,headers){
     const options = {
@@ -34,7 +37,7 @@ module.exports = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        //'Content-Length': data_size
+        'Content-Length': data_size
         //'Transfer-Encoding' : 'chunked'
       }
     };
@@ -52,18 +55,22 @@ module.exports = {
         console.log(`响应主体: ${chunk}`);
       });
       res.on('end', () => {
-        console.log('响应中已无数据');
+        console.log('res end');
         cb(0);
       });
-    });
+    });console.log(req);
     
     req.on('error', (e) => {
       console.error(`请求遇到问题: ${e.message}`);
       cb(e.message);
     });
+    req.on('end', (e) => {
+      console.log(`req end`);
+      
+    });
     return req;
   },
-    sentCallback:function(err){
+    sentCallback:function(err){console.log('cb');
       if(err){
           Utils.toast('error');
       }else{
