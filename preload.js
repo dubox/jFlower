@@ -22,7 +22,7 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
         if(type == 'files'){
             Clients.sendFile(code,payload,Clients.sentCallback);
         }else if(type == 'img'){
-            Clients.sendImg(code,payload,fClients.sentCallback);
+            Clients.sendImg(code,payload,Clients.sentCallback);
         }else{
             Clients.sendText(code,payload,Clients.sentCallback);
         }

@@ -31,23 +31,23 @@ var server = {
                             return;
                         }
                         console.log(req);
-                        var url = req.url.split('?');
-                        var cmd = url[0];
+                        //var url = req.url.split('?');
+                        var cmd = req.url;
                         if(cmd == '/text'){
-                            _this.onText(url[1] || '');
+                            _this.onText(req,res);
                         }else if(cmd == '/file'){
-                            _this.onFile(req);
+                            _this.onFile(req,res);
                         }else if(cmd == '/img'){
-                            _this.onImg(req);
+                            _this.onImg(req,res);
                         }else if(cmd == '/share'){
 
-                        }else{res.write('hello\n');}
+                        }else{res.write('hello\n');res.end();}
                         
-                        res.end();
+                        
                     }).listen(8891); //ipv6 ,'::'
                
     },
-    onText : function(req){
+    onText : function(req ,res){
        
         req.setEncoding('utf8');
         let rawData = '';
@@ -57,9 +57,9 @@ var server = {
                 utools.shellOpenExternal(rawData);
             }else{
                 utools.copyText(rawData);
-                toast(`"${text}"已复制到剪贴板`);
+                Utils.toast(`"${text}"已复制到剪贴板`);
             }
-            
+            res.end();
         });
         // let userChoose = utools.showMessageBox({
         //     type: 'question',
@@ -73,17 +73,29 @@ var server = {
         //     utools.hideMainWindow();
         //   }
     },
-    onFile : function(req){
-        var fstream = fs.createWriteStream(utools.getPath('downloads')+path.sep+'a.txt');console.log(fstream);
-        req.pipe(fstream);
+    onFile : function(req ,res){
+        var target_file = utools.getPath('downloads')+path.sep+req.headers.file_name;
+        if(fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()){
+            Utils.toast(`[err]"${req.headers.file_name}"是一个目录`);
+            res.end();
+        }else{
+            //req.pipe(fs.createWriteStream(target_file));
+            var ws = fs.createWriteStream(target_file);
+            req.on('data', (chunk) => { ws.write(chunk);});
+            req.on('end', () => {console.log('end');res.end();
+                //utools.copyImage(rawData);
+            });
+        }
+           
         
     },
-    onImg : function(req){
+    onImg : function(req ,res){console.log('img');
         req.setEncoding('utf8');
         let rawData = '';
-        req.on('data', (chunk) => { rawData += chunk; });
-        req.on('end', () => {
+        req.on('data', (chunk) => { rawData += chunk; console.log(chunk);});
+        req.on('end', () => {console.log('end');
             utools.copyImage(rawData);
+            res.end();
         });
         
     }
