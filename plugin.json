@@ -1,23 +1,14 @@
 {
 	"pluginName": "jFlower(局发)",
 	"description": "我的第一个uTools插件",
-	"main": "index.html",
+	"main": "ui/index.html",
 	"version": "0.0.1",
 	"features": [
 	    {
-			"code": "jFlower",
+			"code": "main",
 			"explain": "jFlower(局发)",
-			"cmds":["jFlower", "局发",
-				{
-					"type": "window",
-					"label": "窗口动作",
-					
-					"match": {
-					  
-					   "app": ["Finder.app"]
-					  
-					}
-				}
+			"cmds":["jFlower", "局发"
+				
 			]
 		}
 		

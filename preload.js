@@ -2,16 +2,15 @@ var Server = require('./server');
 var Utils = require('./utils');
 var Clients = require('./clients');
 
-Server.check();
+
 Utils.toast(`本机ip：${Utils.getLocalIp()}`);
 
-setTimeout(function(){
+
+Server.check(()=>{
     Utils.detectDevice();
-},0);
+});
 
 
-
-   
 
 utools.onPluginEnter(({code, type, payload, optional}) => {
     console.log('用户进入插件', code, type, payload);
@@ -29,4 +28,9 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
        
     }
     
-})
+});
+
+window.app = {
+    localIp : Utils.getLocalIp(),
+    checkServer : function(cb){Server.check(cb);},
+}

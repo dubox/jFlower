@@ -8,21 +8,28 @@ var server = {
     instance :null,
     port  : 8891,
 
-    check : function(){
+    check : function(cb){
         var _this = this;
-        
-            http.get('http://127.0.0.1:'+this.port, (res) => {
+        http.get('http://127.0.0.1:'+this.port+'/check', (res) => {
                 res.resume();
+                //cb();console.log('ok');
+                http.get('http://127.0.0.1:'+this.port+'/check', (res) => {
+                    res.resume();
+                    cb();console.log('ok');
+                    
+                }).on('error', (err) => { 
+    
+                    console.log('err');
+                    _this.create(cb);
+                });
             }).on('error', (err) => { 
 
-                if(_this.instance)
-                _this.instance.close();
-                _this.create();
+                console.log('err');
+                _this.create(cb);
             });
-        
     },
 
-    create : function(){
+    create : function(cb){
                
                 var _this = this;
                     this.instance = http.createServer((req, res) => {
@@ -42,10 +49,19 @@ var server = {
                             _this.onImg(req,res);
                         }else if(cmd == '/share'){
 
+                        }else if(cmd == '/detect'){
+                            res.setHeader('id', utools.getLocalId());res.end();
+                        }else if(cmd == '/close'){
+                            res.end();
+                            _this.instance.close();
                         }else{res.write('hello\n');res.end();}
                         
                         
-                    }).listen(8891); //ipv6 ,'::'
+                    }).listen(8891,cb); //ipv6 ,'::'
+                    this.instance.on('clientError', (err, socket) => {
+                        socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+                      });
+
                
     },
     onText : function(req ,res){
@@ -76,18 +92,25 @@ var server = {
     },
     onFile : function(req ,res){
         var target_file = utools.getPath('downloads')+path.sep+decodeURI(req.headers.file_name);
+        var size = parseInt(req.headers['content-length']);
         if(fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()){
             Utils.toast(`[err]"${req.headers.file_name}"是一个目录`);
             res.end();
         }else{
-            //req.pipe(fs.createWriteStream(target_file));
             var ws = fs.createWriteStream(target_file);
-            req.on('data', (chunk) => { ws.write(chunk);});
-            req.on('end', () => {
+            var read_length = 0;
+            req.on('data', (chunk) => { 
+                console.log('write:', (read_length+=chunk.length)/size * 100,'%');
+                //ws.write(chunk);
+            });
+            req.on('end', () => {console.log('end:',(new Date()).getTime());
                 ws.end();
                 res.end();
-                //utools.copyImage(rawData);
             });
+            ws.on('finish', () => {
+                console.log('finish:',(new Date()).getTime());
+            });
+            req.pipe(ws);
         }
            
         

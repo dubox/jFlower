@@ -11,17 +11,25 @@ module.exports = {
         var file = files[0];
        console.log('file');
        let size = fs.statSync(file.path).size;console.log('size:',size);
-       //fs.createReadStream(file.path).pipe(this.sender('file',ip , size ,cb,{file_name:file.name}));
-                                                          //文件名使用url转码，否则在header中会有问题
-        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(file.name)});console.log(req);
-        var rs = fs.createReadStream(file.path);console.log(rs);
+       
+        //文件名使用url转码，否则中文在header中会有问题
+        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(file.name)});
+        var rs = fs.createReadStream(file.path);
+        var read_length = 0;
         rs.on('data', function(chunk) {
-          console.log('write', chunk.length);
-          req.write(chunk);
+          console.log('read:', (read_length+=chunk.length)/size * 100,'%');
+          //req.write(chunk);
         });
-        rs.on('end', function() {console.log('rs end');
+        rs.on('end', function() {console.log('end2:',(new Date()).getTime());
             req.end();
         });
+        rs.on('error', function(err) {console.log('err:',err);
+            req.destroy(err);
+        });
+        req.on('finish', () => {
+          console.log('finish2:',(new Date()).getTime());
+      });
+      rs.pipe(req);
           //req.end();
     },
     sendImg:function(ip , img ,cb){
@@ -75,7 +83,7 @@ module.exports = {
           Utils.toast('error');
       }else{
           Utils.toast('发送成功');
-          //utools.outPlugin();
+          utools.outPlugin();
           utools.hideMainWindow();
       }
     }

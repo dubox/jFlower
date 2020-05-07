@@ -77,9 +77,9 @@ module.exports = {
         for(let i=1;i<256;i++){
             var ip = ipSeg.join('.') + '.' +i;
             (function(ip){
-                http.get(`http://${ip}:8891`, (res) => {console.log(ip);console.log(res);
-                ips.push(ip);
-                _this.addFeature(ip);
+                http.get(`http://${ip}:8891/detect`, (res) => {console.log(ip);console.log(res);
+                ips.push(ip ,res.headers.id);
+                _this.addFeature(ip ,);
                 res.resume();
               }).on('error', (err) => {});
             })(ip);
