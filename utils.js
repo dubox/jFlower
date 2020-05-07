@@ -71,15 +71,19 @@ module.exports = {
 
         var _this = this;
         this.clearFeatures();
-        var ipSeg = _this.getLocalIp().split('.');
+        var localIp = _this.getLocalIp();
+        var ipSeg = localIp.split('.');
         ipSeg.pop();
         var ips = [];
         for(let i=1;i<256;i++){
             var ip = ipSeg.join('.') + '.' +i;
             (function(ip){
-                http.get(`http://${ip}:8891/detect`, (res) => {console.log(ip);console.log(res);
-                ips.push(ip ,res.headers.id);
-                _this.addFeature(ip ,);
+                http.get(`http://${ip}:8891/detect`,{headers: {
+                    'ip': localIp,
+                    'id':utools.getLocalId()
+                  }}, (res) => {console.log(ip);console.log(res);
+                ips.push(ip );
+                _this.addFeature(ip ,res.headers.id);
                 res.resume();
               }).on('error', (err) => {});
             })(ip);

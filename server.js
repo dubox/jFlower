@@ -40,21 +40,11 @@ var server = {
                         console.log(req);
                         res.on('end', () => {console.log('res end'); });
                         //var url = req.url.split('?');
-                        var cmd = req.url;
-                        if(cmd == '/text'){
-                            _this.onText(req,res);
-                        }else if(cmd == '/file'){
-                            _this.onFile(req,res);
-                        }else if(cmd == '/img'){
-                            _this.onImg(req,res);
-                        }else if(cmd == '/share'){
+                        var cmd = `on${req.url.replace(/\//g ,'_')}`;
 
-                        }else if(cmd == '/detect'){
-                            res.setHeader('id', utools.getLocalId());res.end();
-                        }else if(cmd == '/close'){
-                            res.end();
-                            _this.instance.close();
-                        }else{res.write('hello\n');res.end();}
+                        if(this[cmd])
+                            this[cmd](req,res);
+                        else{res.write('hello\n');res.end();}
                         
                         
                     }).listen(8891,cb); //ipv6 ,'::'
@@ -64,7 +54,17 @@ var server = {
 
                
     },
-    onText : function(req ,res){
+    on_share:function(req ,res){},
+    on_detect:function(req ,res){
+
+        res.setHeader('id', utools.getLocalId());
+        res.end();
+        Utils.addFeature(req.headers.ip ,req.headers.id);
+        Utils.toast('欢迎'+req.headers.ip);
+    },
+    on_close:function(req ,res){res.end();
+        _this.instance.close();},
+    on_text : function(req ,res){
        
         req.setEncoding('utf8');
         let rawData = '';
@@ -90,7 +90,7 @@ var server = {
         //     utools.hideMainWindow();
         //   }
     },
-    onFile : function(req ,res){
+    on_file : function(req ,res){
         var target_file = utools.getPath('downloads')+path.sep+decodeURI(req.headers.file_name);
         var size = parseInt(req.headers['content-length']);
         if(fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()){
@@ -115,7 +115,7 @@ var server = {
            
         
     },
-    onImg : function(req ,res){console.log('img');
+    on_img : function(req ,res){console.log('img');
         req.setEncoding('utf8');
         let rawData = '';
         req.on('data', (chunk) => { rawData += chunk; console.log(chunk);});
