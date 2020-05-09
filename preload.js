@@ -1,6 +1,7 @@
 var Server = require('./server');
 var Utils = require('./utils');
 var Clients = require('./clients');
+var runTime = require('./runtime');
 
 
 Utils.toast(`本机ip：${Utils.getLocalIp()}`);
@@ -29,8 +30,16 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
     }
     
 });
+utools.onPluginOut(() => {
+    console.log('用户退出插件')
+  })
 
 window.app = {
     localIp : Utils.getLocalIp(),
     checkServer : function(cb){Server.check(cb);},
+    clientRunTime : runTime.client,
+    serverRunTime : Server.runTime,
+    showFile : function(path){
+        utools.shellShowItemInFolder(path);
+    }
 }

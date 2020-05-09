@@ -7,6 +7,16 @@ var server = {
 
     instance :null,
     port  : 8891,
+    runTime:{
+        file:{
+            name:'',
+            size:0,
+            receive:0,
+            from:'',
+            position:'',
+            startTime:0
+        }
+    },
 
     check : function(cb){
         var _this = this;
@@ -91,16 +101,20 @@ var server = {
         //   }
     },
     on_file : function(req ,res){
-        var target_file = utools.getPath('downloads')+path.sep+decodeURI(req.headers.file_name);
-        var size = parseInt(req.headers['content-length']);
+        var _this = this;
+        _this.runTime.file.name = decodeURI(req.headers.file_name);
+        var target_file = _this.runTime.file.position = utools.getPath('downloads')+path.sep+_this.runTime.file.name;
+        var size = _this.runTime.file.size = parseInt(req.headers['content-length']);
+        
         if(fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()){
-            Utils.toast(`[err]"${req.headers.file_name}"是一个目录`);
+            Utils.toast(`[err]"${_this.runTime.file.name}"是一个目录`);
             res.end();
         }else{
             var ws = fs.createWriteStream(target_file);
-            var read_length = 0;
+            
             req.on('data', (chunk) => { 
-                console.log('write:', (read_length+=chunk.length)/size * 100,'%');
+                _this.runTime.file.receive += chunk.length;
+                //console.log('write:', (read_length+=chunk.length)/size * 100,'%');
                 //ws.write(chunk);
             });
             req.on('end', () => {console.log('end:',(new Date()).getTime());
@@ -111,6 +125,8 @@ var server = {
                 console.log('finish:',(new Date()).getTime());
             });
             req.pipe(ws);
+            _this.runTime.file.startTime = (new Date()).getTime();
+            utools.showMainWindow();
         }
            
         

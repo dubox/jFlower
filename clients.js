@@ -1,36 +1,42 @@
 const http = require('http');
 const fs = require('fs');
 var Utils = require('./utils');
+var runTime = require('./runtime');
 
 module.exports = {
+  runTime:runTime.client,
     sendText : function(ip,text,cb){
       var req = this.sender('text',ip , new Buffer(text).length ,cb)
         req.write(text,'utf8',() => {req.end();});//
     },
     sendFile:function(ip , files ,cb ){
+      var _this = this;
         var file = files[0];
        console.log('file');
-       let size = fs.statSync(file.path).size;console.log('size:',size);
+       let size = _this.runTime.file.size = fs.statSync(file.path).size;console.log('size:',size);
+       runTime.client.file.to = ip;
        
         //文件名使用url转码，否则中文在header中会有问题
-        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(file.name)});
+        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(runTime.client.file.name = file.name)});
         var rs = fs.createReadStream(file.path);
-        var read_length = 0;
+        runTime.client.file.sent = 0;
         rs.on('data', function(chunk) {
-          console.log('read:', (read_length+=chunk.length)/size * 100,'%');
+          runTime.client.file.sent +=chunk.length;
+          //console.log('read:', (read_length+=chunk.length)/size * 100,'%');
           //req.write(chunk);
         });
         rs.on('end', function() {console.log('end2:',(new Date()).getTime());
             req.end();
+            runTime.client.file = {startTime:0};
         });
         rs.on('error', function(err) {console.log('err:',err);
             req.destroy(err);
         });
         req.on('finish', () => {
           console.log('finish2:',(new Date()).getTime());
-      });
-      rs.pipe(req);
-          //req.end();
+        });
+        rs.pipe(req);
+        runTime.client.file.startTime = (new Date()).getTime();
     },
     sendImg:function(ip , img ,cb){
       
