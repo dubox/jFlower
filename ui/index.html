@@ -81,7 +81,7 @@
             :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
             stroke-color="#2db7f5">
             <div class="file-info">
-                <h1 v-on:click="showFile(runTime.fileReceive.position)">{{runTime.fileReceive.name}}</h1>
+                <h1 v-on:click="showFile(runTime.fileReceive.position)" style="color: #2db7f5;cursor: pointer;">{{runTime.fileReceive.name}}</h1>
                 <p>From：{{runTime.fileReceive.from}}</p>
                 <span class="speed">
                     

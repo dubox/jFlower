@@ -27,7 +27,7 @@ module.exports = {
         });
         rs.on('end', function() {console.log('end2:',(new Date()).getTime());
             req.end();
-            _this.runTime.fileSend = {startTime:0};
+            //_this.runTime.fileSend = {startTime:0};
         });
         rs.on('error', function(err) {console.log('err:',err);
             req.destroy(err);

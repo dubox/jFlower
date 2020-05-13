@@ -106,7 +106,7 @@ var server = {
             res.end();
         }else{
             var ws = fs.createWriteStream(target_file);
-            
+            _this.runTime.fileReceive.receive = 0;
             req.on('data', (chunk) => { 
                 _this.runTime.fileReceive.receive += chunk.length;
                 //console.log('write:', (read_length+=chunk.length)/size * 100,'%');
@@ -118,10 +118,12 @@ var server = {
             });
             ws.on('finish', () => {
                 console.log('finish:',(new Date()).getTime());
+                utools.shellShowItemInFolder(target_file);
             });
             req.pipe(ws);
             _this.runTime.fileReceive.startTime = (new Date()).getTime();
             utools.showMainWindow();
+            Utils.toast(`收到文件[${_this.runTime.fileReceive.name}]`);
         }
            
         
