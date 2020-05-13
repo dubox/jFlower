@@ -2,6 +2,7 @@ const os = require('os');
 const http = require('http');
 
 module.exports = {
+    //runTime:runTime.common,
     toast :function (msg,code){
         utools.showNotification(msg);
     },
@@ -82,6 +83,7 @@ module.exports = {
                     'ip': localIp,
                     'id':utools.getLocalId()
                   }}, (res) => {console.log(ip);console.log(res);
+                    if(ip == localIp)return;
                 ips.push(ip );
                 _this.addFeature(ip ,res.headers.id);
                 res.resume();

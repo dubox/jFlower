@@ -2,21 +2,13 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 var Utils = require('./utils');
+var runTime = require('./runtime');
 
 var server = {
 
     instance :null,
     port  : 8891,
-    runTime:{
-        file:{
-            name:'',
-            size:0,
-            receive:0,
-            from:'',
-            position:'',
-            startTime:0
-        }
-    },
+    runTime:runTime.server,
 
     check : function(cb){
         var _this = this;
@@ -69,8 +61,10 @@ var server = {
 
         res.setHeader('id', utools.getLocalId());
         res.end();
-        Utils.addFeature(req.headers.ip ,req.headers.id);
         Utils.toast('欢迎'+req.headers.ip);
+        if(req.headers.ip == runTime.localIp)return;
+        Utils.addFeature(req.headers.ip ,req.headers.id);
+        
     },
     on_close:function(req ,res){res.end();
         _this.instance.close();},
@@ -102,18 +96,19 @@ var server = {
     },
     on_file : function(req ,res){
         var _this = this;
-        _this.runTime.file.name = decodeURI(req.headers.file_name);
-        var target_file = _this.runTime.file.position = utools.getPath('downloads')+path.sep+_this.runTime.file.name;
-        var size = _this.runTime.file.size = parseInt(req.headers['content-length']);
+        _this.runTime.fileReceive.name = decodeURI(req.headers.file_name);
+        _this.runTime.fileReceive.from = req.headers.ip;
+        var target_file = _this.runTime.fileReceive.position = utools.getPath('downloads')+path.sep+_this.runTime.fileReceive.name;
+        var size = _this.runTime.fileReceive.size = parseInt(req.headers['content-length']);
         
         if(fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()){
-            Utils.toast(`[err]"${_this.runTime.file.name}"是一个目录`);
+            Utils.toast(`[err]"${_this.runTime.fileReceive.name}"是一个目录`);
             res.end();
         }else{
             var ws = fs.createWriteStream(target_file);
             
             req.on('data', (chunk) => { 
-                _this.runTime.file.receive += chunk.length;
+                _this.runTime.fileReceive.receive += chunk.length;
                 //console.log('write:', (read_length+=chunk.length)/size * 100,'%');
                 //ws.write(chunk);
             });
@@ -125,7 +120,7 @@ var server = {
                 console.log('finish:',(new Date()).getTime());
             });
             req.pipe(ws);
-            _this.runTime.file.startTime = (new Date()).getTime();
+            _this.runTime.fileReceive.startTime = (new Date()).getTime();
             utools.showMainWindow();
         }
            

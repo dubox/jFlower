@@ -13,21 +13,21 @@ module.exports = {
       var _this = this;
         var file = files[0];
        console.log('file');
-       let size = _this.runTime.file.size = fs.statSync(file.path).size;console.log('size:',size);
-       runTime.client.file.to = ip;
+       let size = _this.runTime.fileSend.size = fs.statSync(file.path).size;console.log('size:',size);
+       _this.runTime.fileSend.to = ip;
        
         //文件名使用url转码，否则中文在header中会有问题
-        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(runTime.client.file.name = file.name)});
+        var req = this.sender('file',ip , size ,cb,{file_name:encodeURI(_this.runTime.fileSend.name = file.name)});
         var rs = fs.createReadStream(file.path);
-        runTime.client.file.sent = 0;
+        _this.runTime.fileSend.sent = 0;
         rs.on('data', function(chunk) {
-          runTime.client.file.sent +=chunk.length;
+          _this.runTime.fileSend.sent +=chunk.length;
           //console.log('read:', (read_length+=chunk.length)/size * 100,'%');
           //req.write(chunk);
         });
         rs.on('end', function() {console.log('end2:',(new Date()).getTime());
             req.end();
-            runTime.client.file = {startTime:0};
+            _this.runTime.fileSend = {startTime:0};
         });
         rs.on('error', function(err) {console.log('err:',err);
             req.destroy(err);
@@ -36,7 +36,7 @@ module.exports = {
           console.log('finish2:',(new Date()).getTime());
         });
         rs.pipe(req);
-        runTime.client.file.startTime = (new Date()).getTime();
+        _this.runTime.fileSend.startTime = (new Date()).getTime();
     },
     sendImg:function(ip , img ,cb){
       
@@ -51,8 +51,10 @@ module.exports = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': data_size
-        //'Transfer-Encoding' : 'chunked'
+        'Content-Length': data_size,
+        //'Transfer-Encoding' : 'chunked',
+        'ip':Utils.getLocalIp(),
+        'id':utools.getLocalId()
       }
     };
     if(headers){

@@ -13,7 +13,7 @@
             .ivu-layout{background: none;}
             .file-info{width: 80%;margin: 0 auto;}
             .file-info h1 {
-                font-size: 26px;
+                font-size: 24px;
                 font-weight: 400;
             }
             .file-info p {
@@ -50,47 +50,47 @@
     <div id="ui" v-cloak>
     <Layout class="layout">
         <Row type="flex" align="middle" class="opacity-7">
-            <i-col span="12" class="col" align="middle" v-if="runTime.file.size">
+            <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
         <i-circle
-            :size="300"
+            :size="circleSize"
             :trail-width="4"
             :stroke-width="5"
-            :percent="Math.round((runTime.file.sent/runTime.file.size)*100)"
+            :percent="Math.round((runTime.fileSend.sent/runTime.fileSend.size)*100)"
             stroke-color="#43a3fb">
             <div class="file-info">
-                <h1>{{runTime.file.name}}</h1>
-                <p>To：{{runTime.file.to}}</p>
+                <h1>{{runTime.fileSend.name}}</h1>
+                <p>To：{{runTime.fileSend.to}}</p>
                 <span class="speed">
                     
                     {{speedSend}} M/s
                 </span>
                 <span class="total">
                     
-                    {{(runTime.file.sent/1000/1000).toFixed(2)}} /
-                    <i>{{(runTime.file.file/1000/1000).toFixed(2)}} M</i>
+                    {{(runTime.fileSend.sent/1000/1000).toFixed(3)}} /
+                    <i>{{(runTime.fileSend.size/1000/1000).toFixed(3)}} M</i>
                 </span>
                 
             </div>
         </i-circle>
     </i-col>
-    <i-col span="12" class="col" align="middle" v-if="runTime.file.size">
+    <i-col span="12" class="col" align="middle" v-if="runTime.fileReceive.size">
         <i-circle
-            :size="300"
+            :size="circleSize"
             :trail-width="4"
             :stroke-width="5"
-            :percent="Math.round((runTime.fileReceive.sent/runTime.fileReceive.size)*100)"
-            stroke-color="#43a3fb">
+            :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
+            stroke-color="#2db7f5">
             <div class="file-info">
-                <h1 :click="showFile(runTime.fileReceive.position)">{{runTime.fileReceive.name}}</h1>
-                <p>To：{{runTime.fileReceive.to}}</p>
+                <h1 v-on:click="showFile(runTime.fileReceive.position)">{{runTime.fileReceive.name}}</h1>
+                <p>From：{{runTime.fileReceive.from}}</p>
                 <span class="speed">
                     
                     {{speedReceive}} M/s
                 </span>
                 <span class="total">
                     
-                    {{(runTime.fileReceive.sent/1000/1000).toFixed(2)}} /
-                    <i>{{(runTime.file.fileReceive/1000/1000).toFixed(2)}} M</i>
+                    {{(runTime.fileReceive.receive/1000/1000).toFixed(3)}} /
+                    <i>{{(runTime.fileReceive.size/1000/1000).toFixed(3)}} M</i>
                 </span>
                 
             </div>

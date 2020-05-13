@@ -1,6 +1,8 @@
+var Utils = require('./utils');
+
 module.exports = {
     client:{
-        file:{
+        fileSend:{
             name:'',
             size:0,
             sent:0,
@@ -9,7 +11,7 @@ module.exports = {
         }
     },
     server :{
-        file:{
+        fileReceive:{
             name:'',
             size:0,
             receive:0,
@@ -18,6 +20,10 @@ module.exports = {
             startTime:0
         }
     },
+    
+    localIp : Utils.getLocalIp(),
+    localId : utools.getLocalId(),
+    
 
     clear:function(key){
         var keys = key.split('.');
