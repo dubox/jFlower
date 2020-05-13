@@ -118,7 +118,9 @@ var server = {
             });
             ws.on('finish', () => {
                 console.log('finish:',(new Date()).getTime());
+                utools.outPlugin();
                 utools.shellShowItemInFolder(target_file);
+                
             });
             req.pipe(ws);
             _this.runTime.fileReceive.startTime = (new Date()).getTime();
