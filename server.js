@@ -133,6 +133,7 @@ var server = {
         req.on('end', () => {console.log('end');
             utools.copyImage(rawData);
             res.end();
+            Utils.toast(`收到[图片]已复制到剪贴板`);
         });
         
     }
