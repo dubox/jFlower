@@ -49,7 +49,18 @@
 <body >
     <div id="ui" v-cloak>
     <Layout class="layout">
-        <Row type="flex" align="middle" class="opacity-7">
+        <Row type="flex" align="middle" class="opacity-7" v-if="!((runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState)">
+            <i-col span="24" class="col" align="middle">
+                <Card :bordered="false" style="width:520px;margin: 50px auto;">
+                    <div style="text-align:center">
+                        <img src="img/logo.png" width="60%">
+                        <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp}}</h3>
+                        <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h3>
+                    </div>
+                </Card>
+            </i-col>
+        </Row>
+        <Row type="flex" align="middle" class="opacity-7" v-if="(runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState">
             <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
         <i-circle
             :size="circleSize"

@@ -3,6 +3,7 @@
 	"description": "我的第一个uTools插件",
 	"main": "ui/index.html",
 	"version": "0.0.1",
+	"logo": "ui/img/logo.png",
 	"features": [
 	    {
 			"code": "main",

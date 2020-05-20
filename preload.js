@@ -6,9 +6,20 @@ var runTime = require('./runtime');
 
 Utils.toast(`本机ip：${Utils.getLocalIp()}`);
 
+window.app = {
+    localIp : Utils.getLocalIp(),
+    checkServer : function(cb){Server.check(cb);},
+    serverState : false,
+    clientRunTime : runTime.client,
+    serverRunTime : Server.runTime,
+    showFile : function(path){
+        utools.shellShowItemInFolder(path);
+    }
+}
 
 Server.check(()=>{
     Utils.detectDevice();
+    window.app.serverState = true;
 });
 
 
@@ -28,18 +39,14 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
 
        
     }
+    window.app.serverState = false;
+    Server.check(()=>{console.log('ssss');
+        window.app.serverState = true;
+    });
     
 });
 utools.onPluginOut(() => {
     console.log('用户退出插件')
   })
 
-window.app = {
-    localIp : Utils.getLocalIp(),
-    checkServer : function(cb){Server.check(cb);},
-    clientRunTime : runTime.client,
-    serverRunTime : Server.runTime,
-    showFile : function(path){
-        utools.shellShowItemInFolder(path);
-    }
-}
+
