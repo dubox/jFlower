@@ -40,7 +40,7 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
        
     }
     window.app.serverState = false;
-    Server.check(()=>{console.log('ssss');
+    Server.check(()=>{console.log('server check ok');
         window.app.serverState = true;
     });
     

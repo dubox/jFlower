@@ -5,7 +5,7 @@ var UI = new Vue({
         runTime : {
             fileSend:app.clientRunTime.fileSend,
             fileReceive:app.serverRunTime.fileReceive,
-            serverState:app.serverState,
+            
             localIp:app.localIp
         }
     },
@@ -25,6 +25,9 @@ var UI = new Vue({
                 return 300;
             if(this.runTime.fileSend.size || this.runTime.fileReceive.size)
                 return 500;
+        },
+        serverState:function(){
+            return app.serverState;
         }
     },
     methods: {
