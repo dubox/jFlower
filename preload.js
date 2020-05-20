@@ -9,19 +9,13 @@ Utils.toast(`本机ip：${Utils.getLocalIp()}`);
 window.app = {
     localIp : Utils.getLocalIp(),
     checkServer : function(cb){Server.check(cb);},
-    serverState : false,
+    detectDevice : ()=>{ Utils.detectDevice();},
     clientRunTime : runTime.client,
     serverRunTime : Server.runTime,
     showFile : function(path){
         utools.shellShowItemInFolder(path);
     }
 }
-
-Server.check(()=>{
-    Utils.detectDevice();
-    window.app.serverState = true;
-});
-
 
 
 utools.onPluginEnter(({code, type, payload, optional}) => {
@@ -39,14 +33,18 @@ utools.onPluginEnter(({code, type, payload, optional}) => {
 
        
     }
-    window.app.serverState = false;
+    window.app.ui.runTime.serverState = false;
     Server.check(()=>{console.log('server check ok');
-        window.app.serverState = true;
+        window.app.ui.runTime.serverState = true;
     });
     
 });
 utools.onPluginOut(() => {
     console.log('用户退出插件')
+  })
+utools.onPluginReady(() => {
+    console.log('onPluginReady');
+    
   })
 
 

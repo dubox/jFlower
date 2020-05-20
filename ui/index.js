@@ -1,11 +1,11 @@
 
-var UI = new Vue({
+app.ui = new Vue({
     el: '#ui',
     data: {
         runTime : {
             fileSend:app.clientRunTime.fileSend,
             fileReceive:app.serverRunTime.fileReceive,
-            
+            serverState:app.serverState,
             localIp:app.localIp
         }
     },
@@ -26,13 +26,19 @@ var UI = new Vue({
             if(this.runTime.fileSend.size || this.runTime.fileReceive.size)
                 return 500;
         },
-        serverState:function(){
+        serverState1:function(){
             return app.serverState;
         }
     },
     methods: {
         showFile : function(path){
             app.showFile(path);
-        }
+        },
+
     },
+});
+
+app.checkServer(()=>{
+    app.detectDevice();
+    app.ui.runTime.serverState = true;
 });
