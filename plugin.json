@@ -1,6 +1,8 @@
 {
 	"pluginName": "jFlower(局发)",
 	"description": "我的第一个uTools插件",
+	"author": "dubox",
+	"homepage": "https://github.com/dubox/jFlower",
 	"main": "ui/index.html",
 	"version": "0.0.1",
 	"logo": "ui/img/logo.png",
