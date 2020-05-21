@@ -1,5 +1,5 @@
 # jFlower
-jFlower(局发) ，uTools 插件 ，局域网内容发送
+jFlower(局发) ，[uTools](https://u.tools/) 插件 ，局域网内容发送
 
 ## 用法
 第一次或重新启动uTools后需要使用关键词进入一次插件以激活服务
