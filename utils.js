@@ -4,7 +4,7 @@ const http = require('http');
 module.exports = {
     //runTime:runTime.common,
     toast :function (msg,code){
-        utools.showNotification(msg);
+        utools.showNotification(msg,'code');
     },
     //获取内网ip
     getLocalIp :function (){
