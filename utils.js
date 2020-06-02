@@ -92,6 +92,20 @@ module.exports = {
             
         }
         return ips;
+    },
+    getPlatform:function(){
+        if (utools.isMacOs()) {
+            console.log('mac');
+            return 'mac';
+        }
+        if (utools.isWindows()) {
+            console.log('win');
+            return 'win';
+          }
+          if (utools.isLinux()) {
+            console.log('linux');
+            return 'linux';
+          }
     }
 
 }

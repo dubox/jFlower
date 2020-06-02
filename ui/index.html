@@ -1,116 +1,163 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>jFlower</title>
-        <script type="text/javascript" src="iview/vue.min.js"></script>
-        <link rel="stylesheet" href="iview/iview.css">
-        <script type="text/javascript" src="iview/iview.min.js"></script>
-        <style >
-            [v-cloak]{
-                    display : none;
-            }
-            .ivu-layout{background: none;}
-            .file-info{width: 80%;margin: 0 auto;}
-            .file-info h1 {
-                font-size: 24px;
-                font-weight: 400;
-            }
-            .file-info p {
-        margin: 5px;
-        font-size: 14px;
-        padding-top: 10px;
-    }
 
-    .file-info p:before {
-        content: "";
-        display: block;
-        width: 150px;
-        height: 1px;
-        margin: 0 auto;
-        background: #e0e3e6;
-        position: relative;
-        top: -5px;
-    }
-    .file-info span {
-        display: block;
-        padding-top: 10px;
-        color: #657180;
-        font-size: 14px;
-    }
-    .file-info i{font-style: normal;color: #515a6e;}
-    .file-info .speed{color: #19be6b;}
-    .file-info .total{color: #2db7f5;}
+<head>
+    <meta charset="utf-8">
+    <title>jFlower</title>
+    <script type="text/javascript" src="iview/vue.min.js"></script>
+    <link rel="stylesheet" href="iview/iview.css">
+    <script type="text/javascript" src="iview/iview.min.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
 
-    .col{flex-shrink: 0;
-                flex-grow:1;}
-        </style>
-    </head>
-<body >
+        .ivu-layout {
+            background: none;
+        }
+
+        .file-info {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .file-info h1 {
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .file-info p {
+            margin: 5px;
+            font-size: 14px;
+            padding-top: 10px;
+        }
+
+        .file-info p:before {
+            content: "";
+            display: block;
+            width: 150px;
+            height: 1px;
+            margin: 0 auto;
+            background: #e0e3e6;
+            position: relative;
+            top: -5px;
+        }
+
+        .file-info span {
+            display: block;
+            padding-top: 10px;
+            color: #657180;
+            font-size: 14px;
+        }
+
+        .file-info i {
+            font-style: normal;
+            color: #515a6e;
+        }
+
+        .file-info .speed {
+            color: #19be6b;
+        }
+
+        .file-info .total {
+            color: #2db7f5;
+        }
+
+        .col {
+            flex-shrink: 0;
+            flex-grow: 1;
+        }
+
+        #pull-drawer {
+            width: 20px;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            opacity: .6;
+        }
+
+        #pull-drawer:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
     <div id="ui" v-cloak>
-    <Layout class="layout">
-        <Row type="flex" align="middle" class="opacity-7" v-if="!((runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState)">
-            <i-col span="24" class="col" align="middle">
-                <Card :bordered="false" style="width:520px;margin: 50px auto;">
-                    <div style="text-align:center">
-                        <img src="img/logo.png" width="60%">
-                        <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp}}</h3>
-                        <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h3>
-                    </div>
-                </Card>
-            </i-col>
-        </Row>
-        <Row type="flex" align="middle" class="opacity-7" v-if="(runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState">
-            <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
-        <i-circle
-            :size="circleSize"
-            :trail-width="4"
-            :stroke-width="5"
-            :percent="Math.round((runTime.fileSend.sent/runTime.fileSend.size)*100)"
-            stroke-color="#43a3fb">
-            <div class="file-info">
-                <h1>{{runTime.fileSend.name}}</h1>
-                <p>To：{{runTime.fileSend.to}}</p>
-                <span class="speed">
-                    
-                    {{speedSend}} M/s
-                </span>
-                <span class="total">
-                    
-                    {{(runTime.fileSend.sent/1000/1000).toFixed(3)}} /
-                    <i>{{(runTime.fileSend.size/1000/1000).toFixed(3)}} M</i>
-                </span>
-                
-            </div>
-        </i-circle>
-    </i-col>
-    <i-col span="12" class="col" align="middle" v-if="runTime.fileReceive.size">
-        <i-circle
-            :size="circleSize"
-            :trail-width="4"
-            :stroke-width="5"
-            :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
-            stroke-color="#2db7f5">
-            <div class="file-info">
-                <h1 v-on:click="showFile(runTime.fileReceive.position)" style="color: #2db7f5;cursor: pointer;">{{runTime.fileReceive.name}}</h1>
-                <p>From：{{runTime.fileReceive.from}}</p>
-                <span class="speed">
-                    
-                    {{speedReceive}} M/s
-                </span>
-                <span class="total">
-                    
-                    {{(runTime.fileReceive.receive/1000/1000).toFixed(3)}} /
-                    <i>{{(runTime.fileReceive.size/1000/1000).toFixed(3)}} M</i>
-                </span>
-                
-            </div>
-        </i-circle>
-    </i-col>
+        <Layout class="layout">
+            <Row type="flex" align="middle" class="opacity-7"
+                v-if="!((runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState)">
+                <i-col span="24" class="col" align="middle">
+                    <Card :bordered="false" style="width:520px;margin: 50px auto;">
+                        <div style="text-align:center">
+                            <img src="img/logo.png" width="60%">
+                            <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp}}</h3>
+                                <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h3>
+                        </div>
+                    </Card>
+                </i-col>
+            </Row>
+            <Row type="flex" align="middle" class="opacity-7"
+                v-if="(runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState">
+                <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
+                    <i-circle :size="circleSize" :trail-width="4" :stroke-width="5"
+                        :percent="Math.round((runTime.fileSend.sent/runTime.fileSend.size)*100)" stroke-color="#43a3fb">
+                        <div class="file-info">
+                            <h1>{{runTime.fileSend.name}}</h1>
+                            <p>To：{{runTime.fileSend.to}}</p>
+                            <span class="speed">
 
-</Row>
-    </Layout>
-</div>
-<script type="text/javascript" src="index.js"></script>
+                                {{speedSend}} M/s
+                            </span>
+                            <span class="total">
+
+                                {{(runTime.fileSend.sent/1000/1000).toFixed(3)}} /
+                                <i>{{(runTime.fileSend.size/1000/1000).toFixed(3)}} M</i>
+                            </span>
+
+                        </div>
+                    </i-circle>
+                </i-col>
+                <i-col span="12" class="col" align="middle" v-if="runTime.fileReceive.size">
+                    <i-circle :size="circleSize" :trail-width="4" :stroke-width="5"
+                        :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
+                        stroke-color="#2db7f5">
+                        <div class="file-info">
+                            <h1 v-on:click="showFile(runTime.fileReceive.position)"
+                                style="color: #2db7f5;cursor: pointer;">{{runTime.fileReceive.name}}</h1>
+                            <p>From：{{runTime.fileReceive.from}}</p>
+                            <span class="speed">
+
+                                {{speedReceive}} M/s
+                            </span>
+                            <span class="total">
+
+                                {{(runTime.fileReceive.receive/1000/1000).toFixed(3)}} /
+                                <i>{{(runTime.fileReceive.size/1000/1000).toFixed(3)}} M</i>
+                            </span>
+
+                        </div>
+                    </i-circle>
+                </i-col>
+
+            </Row>
+
+            <div id="pull-drawer" v-on:click="drawer=true">
+                <Icon type="md-arrow-dropright" />
+            </div>
+
+            <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+            </Drawer>
+        </Layout>
+    </div>
+    <script type="text/javascript" src="index.js"></script>
 </body>
+
 </html>
