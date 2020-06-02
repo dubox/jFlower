@@ -42,6 +42,9 @@ var server = {
 
             //限制客户端请求host为127.0.0.1或本机ip，预防dns rebind攻击
             if (req.headers.host !== '127.0.0.1:' + _this.port && req.headers.host !== runTime.localIp + ':' + _this.port) {
+                res.writeHead(403, {
+                    'Content-Type': 'text/plain' + ';charset=utf-8'
+                });
                 res.end();
                 return;
             }
