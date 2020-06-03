@@ -63,7 +63,11 @@ var server = {
                 this[cmd](req, res);
             else if (req.url.indexOf('/share') === 0)
                 this['on_share'](req, res);
-            else { res.write('hello\n'); res.end(); }
+            else {
+                res.writeHead(200, {
+                    'Content-Type': 'text/plain' + ';charset=utf-8'
+                }); res.write('jFlower (局发) is running ...\n'); res.end();
+            }
 
 
         }).listen(8891, cb); //ipv6 ,'::'
@@ -77,10 +81,26 @@ var server = {
 
     },
     on_share: function (req, res) {
-
+        //限制目录请求范围
+        if (!runTime.settings.sharing) {
+            res.writeHead(404, {
+                'Content-Type': 'text/plain' + ';charset=utf-8'
+            });
+            res.end();
+            return;
+        }
         var root = runTime.settings.sharePath || utools.getPath('downloads'); console.log(root);
         var pathname = decodeURI(url.parse(req.url.replace('/share', '/')).pathname);
         var realPath = path.join(root, pathname); console.log(realPath);
+
+        //限制目录请求范围
+        if (realPath.indexOf(root) !== 0) {
+            res.writeHead(404, {
+                'Content-Type': 'text/plain' + ';charset=utf-8'
+            });
+            res.end();
+            return;
+        }
         fs.exists(realPath, function (exists) {
             if (!exists) {
                 res.writeHead(404, {
@@ -95,29 +115,7 @@ var server = {
                 fs.stat(realPath, function (err, stats) {
 
                     if (stats.isFile()) {	//文件
-                        // fs.readFile(realPath, "binary", function (err, file) {
-                        //     if (err) {
-                        //         res.writeHead(500, {
-                        //             'Content-Type': 'text/plain' + ';charset=utf-8'
-                        //         });
-                        //         res.end(err);
-                        //     } else {
-                        //         let ext = path.extname(realPath);
-                        //         ext = ext ? ext.slice(1) : 'unknown';
-                        //         var contentType = mine[ext] || "application/octet-stream";
-                        //         if (/(audio|video)/.test(contentType)) {
-                        //             res.setHeader('Accept-Ranges', 'bytes');
-                        //             res.setHeader('Content-Length', fs.statSync(realPath).size);
-                        //         }
 
-                        //         res.writeHead(200, {
-                        //             'Content-Type': contentType
-                        //         });
-                        //         res.write(file, "binary");
-                        //         res.end();
-                        //     }
-                        // });
-                        console.log(mp4(realPath));
 
                         let ext = path.extname(realPath);
                         ext = ext ? ext.slice(1) : 'unknown';
@@ -125,30 +123,29 @@ var server = {
                         if (/(audio|video)/.test(contentType)) {
                             //断点续传，获取分段的位置
                             var range = req.headers.range;
-                            if (!range) {
-                                //206状态码表示客户端通过发送范围请求头Range抓取到了资源的部分数据
-                                //416状态码表示所请求的范围无法满足
-                                // res.writeHead(416);
-                                // res.end();
-                                // return;
-                                range = 'bytes=0-1';
-                            }
-                            //替换、切分，请求范围格式为：Content-Range: bytes 0-2000/4932
-                            var positions = range.replace(/bytes=/, "").split("-");
-                            //获取客户端请求文件的开始位置
-                            var start = parseInt(positions[0]);
-                            //获得文件大小
-                            var total = stats.size;
-                            //获取客户端请求文件的结束位置
-                            var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
-                            //获取需要读取的文件大小
-                            var chunksize = (end - start) + 1;
-                            res.writeHead(206, {
-                                "Content-Range": "bytes " + start + "-" + end + "/" + total,
-                                "Accept-Ranges": "bytes",
-                                "Content-Length": chunksize,
-                                "Content-Type": contentType
-                            });
+                            if (range) {
+                                //替换、切分，请求范围格式为：Content-Range: bytes 0-2000/4932
+                                var positions = range.replace(/bytes=/, "").split("-");
+                                //获取客户端请求文件的开始位置
+                                var start = parseInt(positions[0]);
+                                //获得文件大小
+                                var total = stats.size;
+                                //获取客户端请求文件的结束位置
+                                var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+                                //获取需要读取的文件大小
+                                var chunksize = (end - start) + 1;
+                                res.writeHead(206, {
+                                    "Content-Range": "bytes " + start + "-" + end + "/" + total,
+                                    "Accept-Ranges": "bytes",
+                                    "Content-Length": chunksize,
+                                    "Content-Type": contentType
+                                });
+                            } else
+                                res.writeHead(200, {
+                                    "Accept-Ranges": "bytes",
+                                    "Content-Length": stats.size,
+                                    "Content-Type": contentType
+                                });
 
                         } else {
                             res.writeHead(200, {
@@ -204,7 +201,7 @@ var server = {
     },
     on_detect: function (req, res) {
 
-        res.setHeader('id', utools.getLocalId());
+        res.setHeader('id', runTime.localId);
         res.end();
         Utils.toast('欢迎' + req.headers.ip);
         if (req.headers.ip == runTime.localIp) return;

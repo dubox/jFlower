@@ -7,22 +7,26 @@ var Clients = require('./clients');
 Utils.toast(`本机ip：${Utils.getLocalIp()}`);
 
 window.app = {
-    localIp: Utils.getLocalIp(),
+    localIp: runTime.localIp,
     checkServer: function (cb) { Server.check(cb); },
     detectDevice: () => { Utils.detectDevice(); },
     clientRunTime: runTime.client,
     serverRunTime: Server.runTime,
+    settings: runTime.settings,
+    updSettings() { runTime.updSettings(); },
     showFile: function (path) {
         utools.shellShowItemInFolder(path);
     },
-    selectPath: function () {
-        let path = utools.showSaveDialog({
+    selectPath: function (defaultPath) {
+        let path = utools.showOpenDialog({
             title: '选择文件夹',
-            defaultPath: utools.getPath('downloads'),
-            buttonLabel: '选择'
+            defaultPath: runTime.settings.sharePath || utools.getPath('downloads'),
+            buttonLabel: '选择',
+            properties: ['openDirectory']
         });
+        console.log(path);
         if (path)
-            runTime.setting.sharePath = path;
+            runTime.setting.sharePath = path[0];
         return !!path;
     },
     checkPathServer() {
@@ -49,6 +53,7 @@ utools.onPluginEnter(({ code, type, payload, optional }) => {
     window.app.ui.runTime.serverState = false;
     Server.check(() => {
         console.log('server check ok');
+        Utils.detectDevice();
         window.app.ui.runTime.serverState = true;
     });
 
@@ -58,6 +63,7 @@ utools.onPluginOut(() => {
 })
 utools.onPluginReady(() => {
     console.log('onPluginReady');
+    runTime.init();
 
 })
 

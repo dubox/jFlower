@@ -8,6 +8,7 @@ app.ui = new Vue({
             serverState: app.serverState,
             localIp: app.localIp
         },
+        settings: app.settings,
         drawer: false
     },
     computed: {
@@ -37,6 +38,14 @@ app.ui = new Vue({
         },
 
     },
+    watch: {
+        settings: {
+            handler(newVal) {
+                app.updSettings();
+            },
+            deep: true
+        }
+    }
 });
 
 // setTimeout(() => {

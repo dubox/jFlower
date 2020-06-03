@@ -3,40 +3,40 @@ const http = require('http');
 
 module.exports = {
     //runTime:runTime.common,
-    toast :function (msg,code){
-        utools.showNotification(msg,'code');
+    toast: function (msg, code) {
+        utools.showNotification(msg, 'code');
     },
     //获取内网ip
-    getLocalIp :function (){
-        var map = [];  
+    getLocalIp: function () {
+        var map = [];
         var nif = os.networkInterfaces();
         //console.log(nif);
-        for (let i in nif){
-            if(nif[i].length > 1)
-                if(nif[i][1].address.indexOf('192.168') === 0)
+        for (let i in nif) {
+            if (nif[i].length > 1)
+                if (nif[i][1].address.indexOf('192.168') === 0)
                     return nif[i][1].address;
         }
         return '';
     },
 
-    clearFeatures : function(){
+    clearFeatures: function () {
         //移除动态加载的功能
         var f = utools.getFeatures();
-        for(let i in f){
-            if(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(f[i].code)){
+        for (let i in f) {
+            if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(f[i].code)) {
                 utools.removeFeature(f[i].code);
             }
         }
     },
-    addFeature :function (ip,id){
+    addFeature: function (ip, id) {
         utools.setFeature({
-            "code": ""+ip,
-            "explain": "发送到："+ip,
+            "code": "" + ip,
+            "explain": "发送到：" + ip,
             // "icon": "res/xxx.png",
             // "icon": "data:image/png;base64,xxx...",
             // "platform": ["win32", "darwin", "linux"]
             "cmds": [
-               
+
                 {
                     "type": "over",
                     "label": "发送文字",
@@ -58,17 +58,19 @@ module.exports = {
                     "minNum": 1,
                     // 数量限制（不多于） (可选)
                     "maxNum": 1
-                  },
-                  {
+                },
+                {
                     // 类型，可能的值（img, files, regex, over）
                     "type": "img",
                     // 文字说明，在搜索列表中出现（必须）
                     "label": "发送图片"
-                 },
+                },
+
+
             ]
-          })
+        })
     },
-    detectDevice : function(){
+    detectDevice: function () {
 
         var _this = this;
         this.clearFeatures();
@@ -76,24 +78,27 @@ module.exports = {
         var ipSeg = localIp.split('.');
         ipSeg.pop();
         var ips = [];
-        for(let i=1;i<256;i++){
-            var ip = ipSeg.join('.') + '.' +i;
-            (function(ip){
-                http.get(`http://${ip}:8891/detect`,{headers: {
-                    'ip': localIp,
-                    'id':utools.getLocalId()
-                  }}, (res) => {console.log(ip);console.log(res);
-                    if(ip == localIp)return;
-                ips.push(ip );
-                _this.addFeature(ip ,res.headers.id);
-                res.resume();
-              }).on('error', (err) => {});
+        for (let i = 1; i < 256; i++) {
+            var ip = ipSeg.join('.') + '.' + i;
+            (function (ip) {
+                http.get(`http://${ip}:8891/detect`, {
+                    headers: {
+                        'ip': localIp,
+                        'id': utools.getLocalId()
+                    }
+                }, (res) => {
+                    console.log(ip); console.log(res);
+                    if (ip == localIp) return;
+                    ips.push(ip);
+                    _this.addFeature(ip, res.headers.id);
+                    res.resume();
+                }).on('error', (err) => { });
             })(ip);
-            
+
         }
         return ips;
     },
-    getPlatform:function(){
+    getPlatform: function () {
         if (utools.isMacOs()) {
             console.log('mac');
             return 'mac';
@@ -101,11 +106,11 @@ module.exports = {
         if (utools.isWindows()) {
             console.log('win');
             return 'win';
-          }
-          if (utools.isLinux()) {
+        }
+        if (utools.isLinux()) {
             console.log('linux');
             return 'linux';
-          }
+        }
     }
 
 }

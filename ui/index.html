@@ -151,9 +151,14 @@
             </div>
 
             <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
-                <p>Some contents...</p>
-                <p>Some contents...</p>
-                <p>Some contents...</p>
+                <Divider orientation="left">目录分享</Divider>
+                <Row>
+                    <i-col span="24">
+                        <i-button type="info" size="small" @click="app.selectPath()">选择文件夹</i-button>
+                        <i-switch v-model="settings.sharing"></i-switch>
+                    </i-col>
+                    <i-col span="24">{{settings.sharePath}}</i-col>
+                </Row>
             </Drawer>
         </Layout>
     </div>

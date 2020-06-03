@@ -1,6 +1,10 @@
 var Utils = require('./utils');
 
 global.runTime = {
+    init: function () {
+        this.localId = utools.getLocalId(); console.log(this.localId);
+        this.settings;
+    },
     client: {
         fileSend: {
             name: '',
@@ -20,8 +24,14 @@ global.runTime = {
             startTime: 0
         }
     },
+
+    localIp: Utils.getLocalIp(),
+    localId: '',
+    platform: Utils.getPlatform(),
+
     _settings: {
         sharePath: '',
+        sharing: false,
 
     },
     //取值
@@ -31,25 +41,23 @@ global.runTime = {
     },
     //赋值
     get setting() {
-        setTimeout(this.updSettings, 0);
+        var _this = this;
+        setTimeout(() => { _this.updSettings(); }, 0);
         return this._settings;
     },
-
-    localIp: Utils.getLocalIp(),
-    localId: utools.getLocalId(),
-    platform: Utils.getPlatform(),
 
 
     loadSettings: function () {
         var res = utools.db.get(this.localId);
         console.log(res);
         if (res) {
-            this._settings = res.data;
+            for (let i in res.data)
+                this._settings[i] = res.data[i];
         }
     },
 
     updSettings: function () {
-        let res = utools.db.get(this.localId);
+        let res = utools.db.get(this.localId); console.log(this.localId, res); console.log(this);
         rev = res ? res._rev : '';
         res = utools.db.put({
             _id: this.localId,

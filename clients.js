@@ -57,7 +57,7 @@ module.exports = {
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
         'ip': Utils.getLocalIp(),
-        'id': utools.getLocalId()
+        'id': runTime.localId
       },
       timeout: 2000
     };
