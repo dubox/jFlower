@@ -154,10 +154,11 @@
                 <Divider orientation="left">目录分享</Divider>
                 <Row>
                     <i-col span="24">
-                        <i-button type="info" size="small" @click="app.selectPath()">选择文件夹</i-button>
+                        <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
                         <i-switch v-model="settings.sharing"></i-switch>
                     </i-col>
-                    <i-col span="24">{{settings.sharePath}}</i-col>
+                    <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
+                    </i-col>
                 </Row>
             </Drawer>
         </Layout>

@@ -8,6 +8,7 @@ Utils.toast(`本机ip：${Utils.getLocalIp()}`);
 
 window.app = {
     localIp: runTime.localIp,
+    openShareUrl: () => { utools.shellOpenExternal('http://' + runTime.localIp + ':' + Server.port + '/share'); },
     checkServer: function (cb) { Server.check(cb); },
     detectDevice: () => { Utils.detectDevice(); },
     clientRunTime: runTime.client,
