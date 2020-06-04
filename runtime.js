@@ -2,7 +2,7 @@ var Utils = require('./utils');
 
 global.runTime = {
     init: function () {
-        this.localId = utools.getLocalId(); console.log(this.localId);
+        this.localId = utools.getLocalId();
         this.settings;
     },
     client: {

@@ -1,4 +1,7 @@
 
+var app = window.app;
+
+
 app.ui = new Vue({
     el: '#ui',
     data: {
@@ -37,6 +40,9 @@ app.ui = new Vue({
             app.showFile(path);
         },
 
+    },
+    mounted() {
+        document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
     },
     watch: {
         settings: {

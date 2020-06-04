@@ -4,36 +4,8 @@ var Utils = require('./utils');
 var Clients = require('./clients');
 
 
-Utils.toast(`本机ip：${Utils.getLocalIp()}`);
+console.log(`本机ip：${Utils.getLocalIp()}`);
 
-window.app = {
-    localIp: runTime.localIp,
-    openShareUrl: () => { utools.shellOpenExternal('http://' + runTime.localIp + ':' + Server.port + '/share'); },
-    checkServer: function (cb) { Server.check(cb); },
-    detectDevice: () => { Utils.detectDevice(); },
-    clientRunTime: runTime.client,
-    serverRunTime: Server.runTime,
-    settings: runTime.settings,
-    updSettings() { runTime.updSettings(); },
-    showFile: function (path) {
-        utools.shellShowItemInFolder(path);
-    },
-    selectPath: function (defaultPath) {
-        let path = utools.showOpenDialog({
-            title: '选择文件夹',
-            defaultPath: runTime.settings.sharePath || utools.getPath('downloads'),
-            buttonLabel: '选择',
-            properties: ['openDirectory']
-        });
-        console.log(path);
-        if (path)
-            runTime.setting.sharePath = path[0];
-        return !!path;
-    },
-    checkPathServer() {
-
-    }
-}
 
 
 utools.onPluginEnter(({ code, type, payload, optional }) => {
@@ -61,11 +33,39 @@ utools.onPluginEnter(({ code, type, payload, optional }) => {
 });
 utools.onPluginOut(() => {
     console.log('用户退出插件')
-})
+});
 utools.onPluginReady(() => {
     console.log('onPluginReady');
     runTime.init();
 
-})
+    window.app = {
+        ready: false,
+        localIp: runTime.localIp,
+        openShareUrl: () => { utools.shellOpenExternal('http://' + runTime.localIp + ':' + Server.port + '/share'); },
+        checkServer: function (cb) { Server.check(cb); },
+        //detectDevice: () => { Utils.detectDevice(); },
+        clientRunTime: runTime.client,
+        serverRunTime: Server.runTime,
+        settings: runTime.settings,
+        updSettings() { runTime.updSettings(); },
+        showFile: function (path) {
+            utools.shellShowItemInFolder(path);
+        },
+        selectPath: function (defaultPath) {
+            let path = utools.showOpenDialog({
+                title: '选择文件夹',
+                defaultPath: runTime.settings.sharePath || utools.getPath('downloads'),
+                buttonLabel: '选择',
+                properties: ['openDirectory']
+            });
+            console.log(path);
+            if (path)
+                runTime.setting.sharePath = path[0];
+            return !!path;
+        },
+        init() {
 
-
+        }
+    };
+    require('./ui/index');
+});

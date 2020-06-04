@@ -83,15 +83,29 @@
         #pull-drawer:hover {
             opacity: 1;
         }
+
+
+        #history .ivu-card {
+            background: rgba(255, 255, 255, .85);
+            word-wrap: break-word;
+        }
+
+        #history .ivu-row-flex {
+            padding-bottom: 20px;
+        }
+
+        #history .ivu-scroll-content {
+            min-height: 100%;
+        }
     </style>
 </head>
 
 <body>
     <div id="ui" v-cloak>
-        <Layout class="layout">
-            <Row type="flex" align="middle" class="opacity-7"
-                v-if="!((runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState)">
-                <i-col span="24" class="col" align="middle">
+        <Layout class="layout" style="position: absolute;left: 0;top: 0;width: 100%;">
+            <Row type="flex" align="middle" class="opacity-7">
+
+                <i-col span="8" class="col" align="middle">
                     <Card :bordered="false" style="width:520px;margin: 50px auto;">
                         <div style="text-align:center">
                             <img src="img/logo.png" width="60%">
@@ -100,70 +114,109 @@
                         </div>
                     </Card>
                 </i-col>
-            </Row>
-            <Row type="flex" align="middle" class="opacity-7"
-                v-if="(runTime.fileSend.size || runTime.fileReceive.size) && runTime.serverState">
-                <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
-                    <i-circle :size="circleSize" :trail-width="4" :stroke-width="5"
-                        :percent="Math.round((runTime.fileSend.sent/runTime.fileSend.size)*100)" stroke-color="#43a3fb">
-                        <div class="file-info">
-                            <h1>{{runTime.fileSend.name}}</h1>
-                            <p>To：{{runTime.fileSend.to}}</p>
-                            <span class="speed">
-
-                                {{speedSend}} M/s
-                            </span>
-                            <span class="total">
-
-                                {{(runTime.fileSend.sent/1000/1000).toFixed(3)}} /
-                                <i>{{(runTime.fileSend.size/1000/1000).toFixed(3)}} M</i>
-                            </span>
-
-                        </div>
-                    </i-circle>
-                </i-col>
-                <i-col span="12" class="col" align="middle" v-if="runTime.fileReceive.size">
-                    <i-circle :size="circleSize" :trail-width="4" :stroke-width="5"
-                        :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
-                        stroke-color="#2db7f5">
-                        <div class="file-info">
-                            <h1 v-on:click="showFile(runTime.fileReceive.position)"
-                                style="color: #2db7f5;cursor: pointer;">{{runTime.fileReceive.name}}</h1>
-                            <p>From：{{runTime.fileReceive.from}}</p>
-                            <span class="speed">
-
-                                {{speedReceive}} M/s
-                            </span>
-                            <span class="total">
-
-                                {{(runTime.fileReceive.receive/1000/1000).toFixed(3)}} /
-                                <i>{{(runTime.fileReceive.size/1000/1000).toFixed(3)}} M</i>
-                            </span>
-
-                        </div>
-                    </i-circle>
-                </i-col>
 
             </Row>
-
-            <div id="pull-drawer" v-on:click="drawer=true">
-                <Icon type="md-arrow-dropright" />
-            </div>
-
-            <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
-                <Divider orientation="left">目录分享</Divider>
-                <Row>
-                    <i-col span="24">
-                        <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
-                        <i-switch v-model="settings.sharing"></i-switch>
-                    </i-col>
-                    <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
-                    </i-col>
-                </Row>
-            </Drawer>
         </Layout>
+        <Layout class="layout" id="history" style="width: 100%; height: 100%;">
+            <Scroll :height="document.documentElement.clientHeight" style="width: 100%;">
+                <Row type="flex" align="middle" class="opacity-7">
+                    <i-col span="2"></i-col>
+                    <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
+                        <Card>
+                            <i-circle :size="circleSize" :trail-width="4" :stroke-width="5"
+                                :percent="Math.round((runTime.fileSend.sent/runTime.fileSend.size)*100)"
+                                stroke-color="#43a3fb">
+                                <div class="file-info">
+                                    <h1>{{runTime.fileSend.name}}</h1>
+                                    <p>To：{{runTime.fileSend.to}}</p>
+                                    <span class="speed">
+
+                                        {{speedSend}} M/s
+                                    </span>
+                                    <span class="total">
+
+                                        {{(runTime.fileSend.sent/1000/1000).toFixed(3)}} /
+                                        <i>{{(runTime.fileSend.size/1000/1000).toFixed(3)}} M</i>
+                                    </span>
+
+                                </div>
+                            </i-circle>
+                        </Card>
+                    </i-col>
+                    <i-col span="10"></i-col>
+                </Row>
+                <Row type="flex" align="middle" class="opacity-7">
+                    <i-col span="10"></i-col>
+                    <i-col span="12" class="col" align="middle">
+                        <Card>
+                            <p slot="title" align="left">
+                                <Icon type="ios-film-outline"></Icon>
+                                To: 192.168.0.223
+                            </p>
+                            <a href="#" slot="extra" @click.prevent="changeLimit">
+                                <Icon type="ios-film-outline"></Icon>
+
+                            </a>
+                            <i-circle :size="300" :trail-width="4" :stroke-width="5"
+                                :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
+                                stroke-color="#2db7f5">
+                                <div class="file-info">
+                                    <h1 v-on:click="showFile(runTime.fileReceive.position)"
+                                        style="color: #2db7f5;cursor: pointer;">{{runTime.fileReceive.name}}</h1>
+                                    <p>From：{{runTime.fileReceive.from}}</p>
+                                    <span class="speed">
+
+                                        {{speedReceive}} M/s
+                                    </span>
+                                    <span class="total">
+
+                                        {{(runTime.fileReceive.receive/1000/1000).toFixed(3)}} /
+                                        <i>{{(runTime.fileReceive.size/1000/1000).toFixed(3)}} M</i>
+                                    </span>
+
+                                </div>
+                            </i-circle>
+                        </Card>
+                    </i-col>
+                    <i-col span="2"></i-col>
+                </Row>
+                <Row type="flex" align="middle" class="opacity-7">
+                    <i-col span="2"></i-col>
+                    <i-col span="12" class="col" align="middle">
+                        <Card>
+                            <p slot="title" align="left">
+                                <Icon type="ios-film-outline"></Icon>
+                                From: 192.168.0.123
+                            </p>
+                            <a href="#" slot="extra" @click.prevent="changeLimit">
+                                <Icon type="ios-film-outline"></Icon>
+
+                            </a>
+                            <p>https://u.tools/docs/developer/api.html#%E7%B3%BB%E7%BB%9F</p>
+                        </Card>
+                    </i-col>
+                    <i-col span="10"></i-col>
+                </Row>
+
+            </Scroll>
+        </Layout>
+        <div id="pull-drawer" v-on:click="drawer=true">
+            <Icon type="md-arrow-dropright" />
+        </div>
+
+        <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
+            <Divider orientation="left">目录分享</Divider>
+            <Row>
+                <i-col span="24">
+                    <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
+                    <i-switch v-model="settings.sharing"></i-switch>
+                </i-col>
+                <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
+                </i-col>
+            </Row>
+        </Drawer>
     </div>
-    <script type="text/javascript" src="index.js"></script>
+
 </body>
 
 </html>
