@@ -50,12 +50,12 @@ module.exports = {
       hostname: ip,
       port: 8891,
       path: '/' + type,
-      cmd: type,
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
+        'cmd': type,
         'ip': Utils.getLocalIp(),
         'id': runTime.localId
       },
