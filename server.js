@@ -21,7 +21,8 @@ var server = {
             //cb();console.log('ok');
             http.get('http://127.0.0.1:' + this.port + '/check', (res) => {
                 res.resume();
-                cb(); console.log('ok');
+                cb();
+                console.log('ok');
 
             }).on('error', (err) => {
 
@@ -55,7 +56,9 @@ var server = {
             }
             req.setEncoding('utf8');
             console.log(req);
-            res.on('end', () => { console.log('res end'); });
+            res.on('end', () => {
+                console.log('res end');
+            });
             //var url = req.url.split('?');
             var cmd = `on_${req.headers.cmd}`;
 
@@ -66,7 +69,9 @@ var server = {
             else {
                 res.writeHead(200, {
                     'Content-Type': 'text/plain' + ';charset=utf-8'
-                }); res.write('jFlower (局发) is running ...\n'); res.end();
+                });
+                res.write('jFlower (局发) is running ...\n');
+                res.end();
             }
 
 
@@ -89,9 +94,11 @@ var server = {
             res.end();
             return;
         }
-        var root = runTime.settings.sharePath || utools.getPath('downloads'); console.log(root);
+        var root = runTime.settings.sharePath || utools.getPath('downloads');
+        console.log(root);
         var pathname = decodeURI(url.parse(req.url.replace('/share', '/')).pathname);
-        var realPath = path.join(root, pathname); console.log(realPath);
+        var realPath = path.join(root, pathname);
+        console.log(realPath);
 
         //限制目录请求范围
         if (realPath.indexOf(root) !== 0) {
@@ -114,12 +121,13 @@ var server = {
                 //判断文件 或 目录
                 fs.stat(realPath, function (err, stats) {
 
-                    if (stats.isFile()) {	//文件
+                    if (stats.isFile()) { //文件
 
 
                         let ext = path.extname(realPath);
                         ext = ext ? ext.slice(1) : 'unknown';
-                        var contentType = mine[ext] || "application/octet-stream"; console.log(contentType);
+                        var contentType = mine[ext] || "application/octet-stream";
+                        console.log(contentType);
                         if (/(audio|video)/.test(contentType)) {
                             //断点续传，获取分段的位置
                             var range = req.headers.range;
@@ -152,7 +160,10 @@ var server = {
                                 'Content-Type': contentType
                             });
                         }
-                        var rs = fs.createReadStream(realPath, { start: start, end: end });
+                        var rs = fs.createReadStream(realPath, {
+                            start: start,
+                            end: end
+                        });
 
                         rs.on('ready', function () {
                             rs.pipe(res);
@@ -216,9 +227,11 @@ var server = {
 
         req.setEncoding('utf8');
         let rawData = '';
-        req.on('data', (chunk) => { rawData += chunk; });
+        req.on('data', (chunk) => {
+            rawData += chunk;
+        });
         req.on('end', () => {
-            if (/^https{0,1}:\/\/.+/.test(rawData)) {
+            if (/^https{0,1}:\/\/\S+$/.test(rawData)) {
                 utools.shellOpenExternal(rawData);
             } else {
                 utools.copyText(rawData);
@@ -279,7 +292,10 @@ var server = {
         console.log('img');
         req.setEncoding('utf8');
         let rawData = '';
-        req.on('data', (chunk) => { rawData += chunk; console.log(chunk); });
+        req.on('data', (chunk) => {
+            rawData += chunk;
+            console.log(chunk);
+        });
         req.on('end', () => {
             console.log('end');
             utools.copyImage(rawData);

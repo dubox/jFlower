@@ -1,4 +1,3 @@
-
 var app = window.app;
 
 
@@ -9,7 +8,8 @@ app.ui = new Vue({
             fileSend: app.clientRunTime.fileSend,
             fileReceive: app.serverRunTime.fileReceive,
             serverState: app.serverState,
-            localIp: app.localIp
+            localIp: app.localIp,
+            history: app.history
         },
         settings: app.settings,
         drawer: false
@@ -33,16 +33,41 @@ app.ui = new Vue({
         },
         serverState1: function () {
             return app.serverState;
+        },
+        _history: function () {
+            var hsy = JSON.parse(JSON.stringify(this.runTime.history));
+            for (let i in hsy) {
+                if (hsy[i].contentType == 'text') {
+                    hsy[i].content = hsy[i].content.replace(/(https{0,1}:\/\/\S+)/g, (match, item) => {
+                        return `<a onclick="app.openUrl('${match}')">${match}</a>`;
+                    });
+                }
+            }
+            return hsy;
         }
     },
     methods: {
+        toast: function (msg, type) {
+            if (type)
+                this.$Message[type](msg);
+            else
+                this.$Message.info(msg);
+        },
         showFile: function (path) {
             app.showFile(path);
         },
-
+        copy: function (content, type) {
+            if (app.copy(content, type))
+                this.toast('复制成功！', 'success');
+            else
+                this.toast('复制失败！', 'error');
+        },
     },
     mounted() {
-        document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
+        setTimeout(() => {
+            document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
+        }, 0);
+
     },
     watch: {
         settings: {
@@ -50,7 +75,7 @@ app.ui = new Vue({
                 app.updSettings();
             },
             deep: true
-        }
+        },
     }
 });
 

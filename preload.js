@@ -8,7 +8,12 @@ console.log(`本机ip：${Utils.getLocalIp()}`);
 
 
 
-utools.onPluginEnter(({ code, type, payload, optional }) => {
+utools.onPluginEnter(({
+    code,
+    type,
+    payload,
+    optional
+}) => {
     console.log('用户进入插件', code, type, payload);
 
     if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)) {
@@ -41,13 +46,23 @@ utools.onPluginReady(() => {
     window.app = {
         ready: false,
         localIp: runTime.localIp,
-        openShareUrl: () => { utools.shellOpenExternal('http://' + runTime.localIp + ':' + Server.port + '/share'); },
-        checkServer: function (cb) { Server.check(cb); },
+        openShareUrl: () => {
+            utools.shellOpenExternal('http://' + runTime.localIp + ':' + Server.port + '/share');
+        },
+        openUrl: (url) => {
+            utools.shellOpenExternal(url);
+        },
+        checkServer: function (cb) {
+            Server.check(cb);
+        },
         //detectDevice: () => { Utils.detectDevice(); },
         clientRunTime: runTime.client,
         serverRunTime: Server.runTime,
         settings: runTime.settings,
-        updSettings() { runTime.updSettings(); },
+        history: runTime.history,
+        updSettings() {
+            runTime.updSettings();
+        },
         showFile: function (path) {
             utools.shellShowItemInFolder(path);
         },
@@ -62,6 +77,19 @@ utools.onPluginReady(() => {
             if (path)
                 runTime.setting.sharePath = path[0];
             return !!path;
+        },
+        clearDB: function (doc) {
+            if (doc) return utools.db.remove(runTime.localId + ':' + doc);
+            utools.db.remove(runTime.localId + ':settings');
+            utools.db.remove(runTime.localId + ':history');
+        },
+        copy: function (content, type) {
+            if (type == 'file')
+                return utools.copyFile(content);
+            if (type == 'img')
+                return utools.copyImage(content);
+
+            return utools.copyText(content);
         },
         init() {
 

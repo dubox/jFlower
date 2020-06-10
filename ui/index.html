@@ -12,6 +12,10 @@
             display: none;
         }
 
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+        }
+
         .ivu-layout {
             background: none;
         }
@@ -97,13 +101,23 @@
         #history .ivu-scroll-content {
             min-height: 100%;
         }
+
+        .ivu-card-head p {
+            font: 16px bold;
+            color: #464c5b;
+        }
+
+        .ivu-card-body p {
+            font: 14px;
+            color: #657180;
+        }
     </style>
 </head>
 
 <body>
     <div id="ui" v-cloak>
-        <Layout class="layout" style="position: absolute;left: 0;top: 0;width: 100%;">
-            <Row type="flex" align="middle" class="opacity-7">
+        <Layout class="layout" style="position: absolute;left: 0;top: 0;width: 100%; opacity: 0.5;">
+            <Row type="flex" align="middle">
 
                 <i-col span="8" class="col" align="middle">
                     <Card :bordered="false" style="width:520px;margin: 50px auto;">
@@ -119,84 +133,57 @@
         </Layout>
         <Layout class="layout" id="history" style="width: 100%; height: 100%;">
             <Scroll :height="document.documentElement.clientHeight" style="width: 100%;">
-                <Row type="flex" align="middle" class="opacity-7">
-                    <i-col span="2"></i-col>
-                    <i-col span="12" class="col" align="middle" v-if="runTime.fileSend.size">
-                        <Card>
-                            <i-circle :size="circleSize" :trail-width="4" :stroke-width="5"
-                                :percent="Math.round((runTime.fileSend.sent/runTime.fileSend.size)*100)"
-                                stroke-color="#43a3fb">
-                                <div class="file-info">
-                                    <h1>{{runTime.fileSend.name}}</h1>
-                                    <p>To：{{runTime.fileSend.to}}</p>
-                                    <span class="speed">
 
-                                        {{speedSend}} M/s
-                                    </span>
-                                    <span class="total">
-
-                                        {{(runTime.fileSend.sent/1000/1000).toFixed(3)}} /
-                                        <i>{{(runTime.fileSend.size/1000/1000).toFixed(3)}} M</i>
-                                    </span>
-
-                                </div>
-                            </i-circle>
-                        </Card>
-                    </i-col>
-                    <i-col span="10"></i-col>
-                </Row>
-                <Row type="flex" align="middle" class="opacity-7">
-                    <i-col span="10"></i-col>
+                <Row v-for="(item ,index) in _history" :key="index" :s="index" type="flex" align="middle">
+                    <i-col :span="item.type==2?10:2"></i-col>
                     <i-col span="12" class="col" align="middle">
+                        <i-time :time="item.time" :interval="10" style="color: #9ea7b4;font-size: 12px;"></i-time>
                         <Card>
                             <p slot="title" align="left">
-                                <Icon type="ios-film-outline"></Icon>
-                                To: 192.168.0.223
+                                <Icon v-if="item.type==1" type="ios-paper-plane-outline" size="20"
+                                    style="transform: rotate(90deg);"></Icon>
+                                <Icon v-if="item.type==2" type="ios-paper-plane-outline" size="20"></Icon>
+                                {{item.ip}}
                             </p>
-                            <a href="#" slot="extra" @click.prevent="changeLimit">
-                                <Icon type="ios-film-outline"></Icon>
-
+                            <a v-if="item.contentType=='file'" href="#" slot="extra"
+                                @click.prevent="copy(item.content.path,item.contentType)">
+                                <Icon type="ios-copy-outline" size="20"></Icon>
                             </a>
-                            <i-circle :size="300" :trail-width="4" :stroke-width="5"
-                                :percent="Math.round((runTime.fileReceive.receive/runTime.fileReceive.size)*100)"
+                            <a v-if="item.contentType!='file'" href="#" slot="extra"
+                                @click.prevent="copy(item.content,item.contentType)">
+                                <Icon type="ios-copy-outline" size="20"></Icon>
+                            </a>
+                            <p v-if="item.contentType=='text'">
+                                <span v-html="item.content"></span>
+                            </p>
+                            <p v-if="item.contentType=='img'">
+                                <img :src="item.content" width="100%" />
+                            </p>
+                            <i-circle v-if="item.contentType=='file'" :size="300" :trail-width="4" :stroke-width="5"
+                                :percent="Math.round((item.content.transferred/item.content.total)*100)"
                                 stroke-color="#2db7f5">
                                 <div class="file-info">
-                                    <h1 v-on:click="showFile(runTime.fileReceive.position)"
-                                        style="color: #2db7f5;cursor: pointer;">{{runTime.fileReceive.name}}</h1>
-                                    <p>From：{{runTime.fileReceive.from}}</p>
+                                    <h1 v-on:click="showFile(item.content.path)"
+                                        style="color: #2db7f5;cursor: pointer;">{{item.content.name}}</h1>
+
                                     <span class="speed">
 
-                                        {{speedReceive}} M/s
+                                        {{Math.round((item.content.transferred / 1000 / 1000) / (item.content.elapsed / 1000) * 100) / 100}}
+                                        M/s
                                     </span>
                                     <span class="total">
 
-                                        {{(runTime.fileReceive.receive/1000/1000).toFixed(3)}} /
-                                        <i>{{(runTime.fileReceive.size/1000/1000).toFixed(3)}} M</i>
+                                        {{(item.content.transferred/1000/1000).toFixed(3)}} /
+                                        <i>{{(item.content.total/1000/1000).toFixed(3)}} M</i>
                                     </span>
 
                                 </div>
                             </i-circle>
                         </Card>
                     </i-col>
-                    <i-col span="2"></i-col>
+                    <i-col :span="item.type==2?2:10"></i-col>
                 </Row>
-                <Row type="flex" align="middle" class="opacity-7">
-                    <i-col span="2"></i-col>
-                    <i-col span="12" class="col" align="middle">
-                        <Card>
-                            <p slot="title" align="left">
-                                <Icon type="ios-film-outline"></Icon>
-                                From: 192.168.0.123
-                            </p>
-                            <a href="#" slot="extra" @click.prevent="changeLimit">
-                                <Icon type="ios-film-outline"></Icon>
 
-                            </a>
-                            <p>https://u.tools/docs/developer/api.html#%E7%B3%BB%E7%BB%9F</p>
-                        </Card>
-                    </i-col>
-                    <i-col span="10"></i-col>
-                </Row>
 
             </Scroll>
         </Layout>

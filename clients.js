@@ -7,17 +7,25 @@ module.exports = {
   runTime: runTime.client,
   sendText: function (ip, text, cb) {
     var req = this.sender('text', ip, new Buffer(text).length, cb)
-    req.write(text, 'utf8', () => { req.end(); });//
+    req.write(text, 'utf8', () => {
+      req.end();
+    }); //
+    this.runTime.type = 'text';
+    this.runTime.content = text;
   },
   sendFile: function (ip, files, cb) {
     var _this = this;
+    this.runTime.type = 'file';
     var file = files[0];
-    console.log('file');
-    let size = _this.runTime.fileSend.size = fs.statSync(file.path).size; console.log('size:', size);
+    let size = _this.runTime.fileSend.size = fs.statSync(file.path).size;
+    console.log('size:', size);
     _this.runTime.fileSend.to = ip;
+    _this.runTime.fileSend.path = file.path;
 
     //文件名使用url转码，否则中文在header中会有问题
-    var req = this.sender('file', ip, size, cb, { file_name: encodeURI(_this.runTime.fileSend.name = file.name) });
+    var req = this.sender('file', ip, size, cb, {
+      file_name: encodeURI(_this.runTime.fileSend.name = file.name)
+    });
     var rs = fs.createReadStream(file.path);
     _this.runTime.fileSend.sent = 0;
     rs.on('data', function (chunk) {
@@ -43,9 +51,14 @@ module.exports = {
   sendImg: function (ip, img, cb) {
 
     var req = this.sender('img', ip, img.length, cb)
-    req.write(img, 'utf8', () => { req.end(); });//
+    req.write(img, 'utf8', () => {
+      req.end();
+    }); //
+    this.runTime.type = 'img';
+    this.runTime.content = img;
   },
   sender: function (type, ip, data_size, cb, headers) {
+
     const options = {
       hostname: ip,
       port: 8891,
@@ -86,8 +99,10 @@ module.exports = {
     });
     req.on('end', (e) => {
       console.log(`req end`);
-
     });
+
+    this.runTime.targetIp = ip;
+
     return req;
   },
   sentCallback: function (err) {
@@ -95,6 +110,25 @@ module.exports = {
     if (err) {
       Utils.toast('error');
     } else {
+      var content = runTime.client.content;
+      if (runTime.client.type == 'file') {
+        content = {
+          name: runTime.client.fileSend.name,
+          path: runTime.client.fileSend.path,
+          transferred: runTime.client.fileSend.sent, //已传输的大小
+          total: runTime.client.fileSend.size,
+          elapsed: new Date().getTime() - runTime.client.fileSend.startTime
+        };
+      }
+      runTime.addHistory({
+        ip: runTime.client.targetIp,
+        id: runTime.client.targetId,
+        type: 2, //1 from,2 to
+        content: content,
+        contentType: runTime.client.type, //text file
+        time: new Date().getTime()
+      });
+
       Utils.toast('发送成功');
       utools.outPlugin();
       utools.hideMainWindow();

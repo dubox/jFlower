@@ -3,9 +3,15 @@ var Utils = require('./utils');
 global.runTime = {
     init: function () {
         this.localId = utools.getLocalId();
-        this.settings;
+        this.settings; //加载设置
+        this.loadHistory(); //加载历史记录
+
     },
     client: {
+        targetIp: '',
+        targetId: '',
+        type: '',
+        content: '',
         fileSend: {
             name: '',
             size: 0,
@@ -15,6 +21,10 @@ global.runTime = {
         }
     },
     server: {
+        fromIp: '',
+        fromId: '',
+        type: '',
+        content: '',
         fileReceive: {
             name: '',
             size: 0,
@@ -42,13 +52,15 @@ global.runTime = {
     //赋值
     get setting() {
         var _this = this;
-        setTimeout(() => { _this.updSettings(); }, 0);
+        setTimeout(() => {
+            _this.updSettings();
+        }, 0);
         return this._settings;
     },
 
 
     loadSettings: function () {
-        var res = utools.db.get(this.localId);
+        var res = utools.db.get(this.localId + ':settings');
         console.log(res);
         if (res) {
             for (let i in res.data)
@@ -57,13 +69,14 @@ global.runTime = {
     },
 
     updSettings: function () {
-        let res = utools.db.get(this.localId); console.log(this.localId, res); console.log(this);
+        let res = utools.db.get(this.localId + ':settings'); // console.log(this.localId, res); console.log(this);
         rev = res ? res._rev : '';
         res = utools.db.put({
-            _id: this.localId,
+            _id: this.localId + ':settings',
             _rev: rev,
             data: this._settings
-        }); console.log(res);
+        });
+        console.log(res);
 
     },
     set: function (key, value) {
@@ -82,13 +95,35 @@ global.runTime = {
 
         }
     },
-    history: {
+    history: [{
         ip: '',
         id: '',
-        type: 1,//1 from,2 to
+        type: 1, //1 from,2 to
         content: '',
-        contentTpye: 'img',//text file
+        contentType: 'img', //text file
         time: ''
+    }],
+    loadHistory: function () {
+        var res = utools.db.get(this.localId + ':history');
+        console.log(res);
+        if (res) {
+            this.history = res.data;
+        } else {
+            this.history = [];
+        }
+    },
+    addHistory: function (data) {
+        console.log(data);
+        this.history.push(data);
+
+        let res = utools.db.get(this.localId + ':history'); // console.log(this.localId, res); console.log(this);
+        rev = res ? res._rev : '';
+        res = utools.db.put({
+            _id: this.localId + ':history',
+            _rev: rev,
+            data: this.history
+        });
+        console.log(res);
     }
 }
 
