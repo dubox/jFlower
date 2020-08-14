@@ -37,6 +37,7 @@ module.exports = {
     });
     req.on('finish', () => {
       console.log('finish2:', (new Date()).getTime());
+      runTime.updHistory();
     });
     rs.pipe(req);
 

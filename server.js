@@ -13,7 +13,12 @@ var server = {
     instance: null,
     port: 8891,
     runTime: runTime.server,
-
+    getClientIp: function (req) {
+        return req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress;
+    },
     check: function (cb) {
         var _this = this;
         http.get('http://127.0.0.1:' + this.port + '/check', (res) => {
@@ -61,7 +66,7 @@ var server = {
             });
             //var url = req.url.split('?');
             var cmd = `on_${req.headers.cmd}`;
-
+            req.ip = _this.getClientIp(req).replace('::ffff:', '');
             if (this[cmd])
                 this[cmd](req, res);
             else if (req.url.indexOf('/share') === 0)
@@ -224,7 +229,7 @@ var server = {
         _this.instance.close();
     },
     on_text: function (req, res) {
-
+        var _this = this;
         req.setEncoding('utf8');
         let rawData = '';
         req.on('data', (chunk) => {
@@ -238,6 +243,16 @@ var server = {
                 Utils.toast(`"${rawData}"已复制到剪贴板`);
             }
             res.end();
+            //let ip = _this.getClientIp(req);
+            //console.log('ip', req.ip)
+            runTime.addHistory({
+                ip: req.ip,
+                id: '',
+                type: 1, //1 from,2 to
+                content: rawData,
+                contentType: 'text', //text file
+                time: new Date().getTime()
+            });
         });
 
     },
@@ -249,10 +264,11 @@ var server = {
     },
     on_file: function (req, res) {
         var _this = this;
-        _this.runTime.fileReceive.name = decodeURI(req.headers.file_name);
+        var runData = {};
+        _this.runTime.fileReceive.name = runData.name = decodeURI(req.headers.file_name);
         _this.runTime.fileReceive.from = req.headers.ip;
-        var target_file = _this.runTime.fileReceive.position = utools.getPath('downloads') + path.sep + _this.runTime.fileReceive.name;
-        var size = _this.runTime.fileReceive.size = parseInt(req.headers['content-length']);
+        var target_file = runData.path = _this.runTime.fileReceive.position = utools.getPath('downloads') + path.sep + _this.runTime.fileReceive.name;
+        var size = runData.total = _this.runTime.fileReceive.size = parseInt(req.headers['content-length']);
 
         if (fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()) {
             Utils.toast(`[err]"${_this.runTime.fileReceive.name}"是一个目录`);
@@ -260,8 +276,12 @@ var server = {
         } else {
             var ws = fs.createWriteStream(target_file);
             _this.runTime.fileReceive.receive = 0;
+            runData.transferred = 0;
+            runData.elapsed = 0;
+            runData.startTime = (new Date()).getTime();
             req.on('data', (chunk) => {
-                _this.runTime.fileReceive.receive += chunk.length;
+                runData.transferred = _this.runTime.fileReceive.receive += chunk.length;
+                runData.elapsed = new Date().getTime() - runData.startTime;
                 //console.log('write:', (read_length+=chunk.length)/size * 100,'%');
                 //ws.write(chunk);
             });
@@ -272,6 +292,7 @@ var server = {
             });
             ws.on('finish', () => {
                 console.log('finish:', (new Date()).getTime());
+                runTime.updHistory();
                 utools.outPlugin();
                 utools.shellShowItemInFolder(target_file);
 
@@ -280,6 +301,15 @@ var server = {
             _this.runTime.fileReceive.startTime = (new Date()).getTime();
             utools.showMainWindow();
             Utils.toast(`收到文件[${_this.runTime.fileReceive.name}]`);
+
+            runTime.addHistory({
+                ip: req.ip,
+                id: '',
+                type: 1, //1 from,2 to
+                content: runData,
+                contentType: 'file', //text file
+                time: new Date().getTime()
+            });
         }
 
 
@@ -297,6 +327,14 @@ var server = {
             utools.copyImage(rawData);
             res.end();
             Utils.toast(`收到[图片]已复制到剪贴板`);
+            runTime.addHistory({
+                ip: req.ip,
+                id: '',
+                type: 1, //1 from,2 to
+                content: rawData,
+                contentType: 'img', //text file
+                time: new Date().getTime()
+            });
         });
 
     }

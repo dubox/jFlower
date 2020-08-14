@@ -142,6 +142,16 @@ global.runTime = {
             data: this.history
         });
         console.log(res);
+    },
+    updHistory: function () {
+        let res = utools.db.get(this.localId + ':history'); // console.log(this.localId, res); console.log(this);
+        rev = res ? res._rev : '';
+        res = utools.db.put({
+            _id: this.localId + ':history',
+            _rev: rev,
+            data: this.history
+        });
+        console.log(res);
     }
 }
 

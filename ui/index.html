@@ -140,10 +140,11 @@
                         <i-time :time="item.time" :interval="10" style="color: #9ea7b4;font-size: 12px;"></i-time>
                         <Card>
                             <p slot="title" align="left">
-                                <Icon v-if="item.type==1" type="ios-paper-plane-outline" size="20"
-                                    style="transform: rotate(90deg);"></Icon>
+
                                 <Icon v-if="item.type==2" type="ios-paper-plane-outline" size="20"></Icon>
                                 {{item.ip}}
+                                <Icon v-if="item.type==1" type="ios-paper-plane-outline" size="20"
+                                    style="transform: rotate(80deg);"></Icon>
                             </p>
                             <a v-if="item.contentType=='file'" href="#" slot="extra"
                                 @click.prevent="copy(item.content.path,item.contentType)">
