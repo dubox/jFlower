@@ -58,7 +58,7 @@ app.ui = new Vue({
         },
         copy: function (content, type) {
             if (app.copy(content, type))
-                this.toast('复制成功！', 'success');
+                this.toast('已复制到剪贴板！', 'success');
             else
                 this.toast('复制失败！', 'error');
         },

@@ -1,5 +1,6 @@
 const os = require('os');
 const http = require('http');
+const md5 = require('./libs/md5');
 
 module.exports = {
     //runTime:runTime.common,
@@ -87,12 +88,13 @@ module.exports = {
                         'id': utools.getLocalId()
                     }
                 }, (res) => {
-                    console.log(ip); console.log(res);
+                    console.log(ip);
+                    console.log(res);
                     if (ip == localIp) return;
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.id);
                     res.resume();
-                }).on('error', (err) => { });
+                }).on('error', (err) => {});
             })(ip);
 
         }
@@ -111,7 +113,9 @@ module.exports = {
             console.log('linux');
             return 'linux';
         }
+    },
+    md5(str) {
+        return md5(str);
     }
 
 }
-

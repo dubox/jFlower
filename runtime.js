@@ -34,6 +34,24 @@ global.runTime = {
             startTime: 0
         }
     },
+    waitingFiles: { //合并到history？
+        //等待请求的待发送文件
+        'tokenxxxxxxxxx': {
+            path: '',
+            time: 0,
+            ip: '',
+        },
+        check(token, ip) {
+            if (token.length != 32) return false;
+            var file = this[token];
+            if (!file) return false;
+            if (file.ip != ip) return false;
+            if ((new Date().getTime()) - file.time > 60000) return false;
+            let path = file.path;
+            delete this[token];
+            return path;
+        }
+    },
 
     localIp: Utils.getLocalIp(),
     localId: '',

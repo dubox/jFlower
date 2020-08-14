@@ -239,17 +239,13 @@ var server = {
             }
             res.end();
         });
-        // let userChoose = utools.showMessageBox({
-        //     type: 'question',
-        //     buttons: ['忽略', '复制到剪贴板'],
-        //     title: '来自***的消息',
-        //     message: text,
-        //     defaultId: 1
-        //   });
-        //   if(userChoose){
-        //     utools.copyText(text);
-        //     utools.hideMainWindow();
-        //   }
+
+    },
+    on_fileAsk: function (req, res) {
+
+        req.resume();
+
+
     },
     on_file: function (req, res) {
         var _this = this;
