@@ -5,7 +5,7 @@ const md5 = require('./libs/md5');
 module.exports = {
     //runTime:runTime.common,
     toast: function (msg, code) {
-        utools.showNotification(msg, 'code');
+        utools.showNotification(msg, 'main'); //
     },
     //获取内网ip
     getLocalIp: function () {
