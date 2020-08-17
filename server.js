@@ -59,14 +59,14 @@ var server = {
                 res.end();
                 return;
             }
-            req.setEncoding('utf8');
-            console.log(req);
+            //req.setEncoding('utf8');
+            //console.log('req:', req);
             res.on('end', () => {
                 console.log('res end');
             });
             //var url = req.url.split('?');
             var cmd = `on_${req.headers.cmd}`;
-            req.ip = _this.getClientIp(req).replace('::ffff:', '');
+            //req.ip = _this.getClientIp(req).replace('::ffff:', '');
             if (this[cmd])
                 this[cmd](req, res);
             else if (req.url.indexOf('/share') === 0)
@@ -265,45 +265,44 @@ var server = {
     on_file: function (req, res) {
         var _this = this;
         var runData = {};
-        _this.runTime.fileReceive.name = runData.name = decodeURI(req.headers.file_name);
-        _this.runTime.fileReceive.from = req.headers.ip;
-        var target_file = runData.path = _this.runTime.fileReceive.position = utools.getPath('downloads') + path.sep + _this.runTime.fileReceive.name;
-        var size = runData.total = _this.runTime.fileReceive.size = parseInt(req.headers['content-length']);
+        runData.name = decodeURI(req.headers.file_name);
+        var target_file = runData.path = utools.getPath('downloads') + path.sep + runData.name;
+        var size = runData.total = parseInt(req.headers['content-length']);
 
         if (fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()) {
-            Utils.toast(`[err]"${_this.runTime.fileReceive.name}"是一个目录`);
+            Utils.toast(`[err]"${runData.name}"是一个目录`);
             res.end();
         } else {
-            var ws = fs.createWriteStream(target_file);
-            _this.runTime.fileReceive.receive = 0;
+            var ws = fs.createWriteStream(target_file, {
+                flags: 'w'
+            });
             runData.transferred = 0;
             runData.elapsed = 0;
             runData.startTime = (new Date()).getTime();
             req.on('data', (chunk) => {
-                runData.transferred = _this.runTime.fileReceive.receive += chunk.length;
+                runData.transferred += chunk.length;
                 runData.elapsed = new Date().getTime() - runData.startTime;
-                //console.log('write:', (read_length+=chunk.length)/size * 100,'%');
+                //
                 //ws.write(chunk);
             });
             req.on('end', () => {
                 console.log('end:', (new Date()).getTime());
-                ws.end();
-                res.end();
+                //ws.end();
+                console.log('write:', runData.transferred);
             });
             ws.on('finish', () => {
                 console.log('finish:', (new Date()).getTime());
                 runTime.updHistory();
-                utools.outPlugin();
+                //utools.outPlugin();
                 utools.shellShowItemInFolder(target_file);
-
+                res.end();
             });
             req.pipe(ws);
-            _this.runTime.fileReceive.startTime = (new Date()).getTime();
             utools.showMainWindow();
-            Utils.toast(`收到文件[${_this.runTime.fileReceive.name}]`);
+            Utils.toast(`收到文件[${runData.name}]`);
 
             runTime.addHistory({
-                ip: req.ip,
+                ip: 'req.ip', //req.ip,
                 id: '',
                 type: 1, //1 from,2 to
                 content: runData,

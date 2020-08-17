@@ -35,6 +35,11 @@ utools.onPluginEnter(({
         window.app.ui.runTime.serverState = true;
     });
 
+    //滚动到列表底部
+    setTimeout(() => {
+        window.document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
+    }, 0);
+
 });
 utools.onPluginOut(() => {
     console.log('用户退出插件')

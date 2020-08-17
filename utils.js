@@ -89,7 +89,7 @@ module.exports = {
                     }
                 }, (res) => {
                     console.log(ip);
-                    console.log(res);
+                    console.log('res:', res);
                     if (ip == localIp) return;
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.id);

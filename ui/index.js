@@ -43,6 +43,7 @@ app.ui = new Vue({
                     });
                 }
             }
+
             return hsy;
         }
     },
@@ -64,9 +65,7 @@ app.ui = new Vue({
         },
     },
     mounted() {
-        setTimeout(() => {
-            document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
-        }, 0);
+
 
     },
     watch: {
