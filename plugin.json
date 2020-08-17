@@ -4,19 +4,18 @@
 	"author": "dubox",
 	"homepage": "https://github.com/dubox/jFlower",
 	"main": "ui/index.html",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"logo": "ui/img/logo.png",
-	"features": [
-	    {
+	"features": [{
 			"code": "main",
 			"explain": "jFlower(局发)",
-			"cmds":["局发","jFlower"
-				
+			"cmds": ["局发", "jFlower"
+
 			]
 		}
-		
-		
-            
+
+
+
 	],
-	"preload":"preload.js"
+	"preload": "preload.js"
 }
