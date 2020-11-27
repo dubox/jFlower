@@ -26,10 +26,6 @@ utools.onPluginEnter(({
             Clients.sendText(code, payload, Clients.sentCallback);
         }
 
-        //滚动到列表底部
-        setTimeout(() => {
-            window.document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
-        }, 0);
     }
     window.app.ui.runTime.serverState = false;
     Server.check(() => {
@@ -38,6 +34,10 @@ utools.onPluginEnter(({
         window.app.ui.runTime.serverState = true;
     });
 
+        //滚动到列表底部
+        setTimeout(() => {
+            window.document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
+        }, 0);
     
 
 });
