@@ -1,10 +1,10 @@
 {
 	"pluginName": "jFlower(局发)",
-	"description": "我的第一个uTools插件",
+	"description": "局域网内容发送（文字、图片、文件），文件夹分享",
 	"author": "dubox",
 	"homepage": "https://github.com/dubox/jFlower",
 	"main": "ui/index.html",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"logo": "ui/img/logo.png",
 	"features": [{
 			"code": "main",

@@ -11,11 +11,13 @@ module.exports = {
     getLocalIp: function () {
         var map = [];
         var nif = os.networkInterfaces();
-        //console.log(nif);
+        console.log('nif:',nif);
         for (let i in nif) {
             if (nif[i].length > 1)
-                if (nif[i][1].address.indexOf('192.168') === 0)
-                    return nif[i][1].address;
+                for (let ii in nif[i]) {
+                    if (nif[i][ii].address.indexOf('192.168') === 0)
+                        return nif[i][ii].address;
+                }
         }
         return '';
     },
