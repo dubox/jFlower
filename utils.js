@@ -1,6 +1,12 @@
 const os = require('os');
 const http = require('http');
 const md5 = require('./libs/md5');
+const {
+    Worker,
+    isMainThread,
+    parentPort,
+    workerData
+} = require('worker_threads');
 
 module.exports = {
     //runTime:runTime.common,
@@ -11,7 +17,7 @@ module.exports = {
     getLocalIp: function () {
         var map = [];
         var nif = os.networkInterfaces();
-        console.log('nif:',nif);
+        console.log('nif:', nif);
         for (let i in nif) {
             if (nif[i].length > 1)
                 for (let ii in nif[i]) {
@@ -80,25 +86,28 @@ module.exports = {
         var localIp = _this.getLocalIp();
         var ipSeg = localIp.split('.');
         ipSeg.pop();
+        ipSeg.pop();
         var ips = [];
-        for (let i = 1; i < 256; i++) {
-            var ip = ipSeg.join('.') + '.' + i;
-            (function (ip) {
-                http.get(`http://${ip}:8891/detect`, {
-                    headers: {
-                        'ip': localIp,
-                        'id': utools.getLocalId()
-                    }
-                }, (res) => {
-                    console.log(ip);
-                    console.log('res:', res);
-                    if (ip == localIp) return;
-                    ips.push(ip);
-                    _this.addFeature(ip, res.headers.id);
-                    res.resume();
-                }).on('error', (err) => {});
-            })(ip);
+        for (let j = 0; j < 256; j++) {
+            for (let i = 0; i < 256; i++) {
+                var ip = ipSeg.join('.') + '.' + j + '.' + i;
+                (function (ip) {
+                    http.get(`http://${ip}:8891/detect`, {
+                        headers: {
+                            'ip': localIp,
+                            'id': utools.getLocalId()
+                        }
+                    }, (res) => {
+                        console.log(ip);
+                        console.log('res:', res);
+                        if (ip == localIp) return;
+                        ips.push(ip);
+                        _this.addFeature(ip, res.headers.id);
+                        res.resume();
+                    }).on('error', (err) => {});
+                })(ip);
 
+            }
         }
         return ips;
     },

@@ -30,15 +30,18 @@ utools.onPluginEnter(({
     window.app.ui.runTime.serverState = false;
     Server.check(() => {
         console.log('server check ok');
-        Utils.detectDevice();
-        window.app.ui.runTime.serverState = true;
+        setTimeout(function () {
+            Utils.detectDevice();
+            window.app.ui.runTime.serverState = true;
+        }, 0);
+
     });
 
-        //滚动到列表底部
-        setTimeout(() => {
-            window.document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
-        }, 0);
-    
+    //滚动到列表底部
+    setTimeout(() => {
+        window.document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
+    }, 0);
+
 
 });
 utools.onPluginOut(() => {
