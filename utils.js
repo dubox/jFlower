@@ -1,6 +1,7 @@
 const os = require('os');
 const http = require('http');
 const md5 = require('./libs/md5');
+const vm = require('vm');
 const {
     Worker,
     isMainThread,
@@ -22,7 +23,7 @@ module.exports = {
             if (nif[i].length > 1)
                 for (let ii in nif[i]) {
                     if (nif[i][ii].address.indexOf('192.168') === 0)
-                        return nif[i][ii].address;
+                        return runTime.localIp = nif[i][ii].address;
                 }
         }
         return '';
@@ -37,10 +38,10 @@ module.exports = {
             }
         }
     },
-    addFeature: function (ip, id) {
+    addFeature: function (ip ,name, id) {
         utools.setFeature({
             "code": "" + ip,
-            "explain": "发送到：" + ip,
+            "explain": `发送给：${name}(${ip})`,
             // "icon": "res/xxx.png",
             // "icon": "data:image/png;base64,xxx...",
             // "platform": ["win32", "darwin", "linux"]
@@ -79,7 +80,88 @@ module.exports = {
             ]
         })
     },
-    detectDevice: function () {
+    detectDevice: function (_ipSeg) {
+        var _this = this;
+        //this.clearFeatures();
+        var localId = utools.getLocalId();
+        var localIp = _this.getLocalIp();
+        if(!(ipSeg = _ipSeg)){
+            var ipSeg = localIp.split('.');
+            ipSeg = ipSeg[2];
+        }
+        
+        var ips = [];
+        
+                for (let i = 0; i < 256; i++) {
+                    var ip = '192.168.' + ipSeg + '.' + i;
+                    (function (ip) {//console.log(ip);
+                        http.get(`http://${ip}:8891/detect`,{
+                            headers: {
+                                'ip': localIp,
+                                'id': localId,
+                                'name': runTime.settings.name
+                            },
+                            timeout:200
+                        }, (res) => {
+                            console.log(ip);
+                            console.log('res:', res);
+                            if (ip == localIp) return;
+                            ips.push(ip);
+                            _this.addFeature(ip,  res.headers.name,res.headers.id);
+                            res.resume();
+                        }).on('error', (err) => {utools.removeFeature(ip);});
+                    })(ip);
+    
+                }
+            
+        
+    },
+    detectDevice4: function () {
+        if (isMainThread) {
+            const worker = new Worker('./detect.js');
+            worker.on('message',function(data){console.log('message:',data)});
+        }
+    },
+    detectDevice3: function () {
+
+        var _this = this;
+        this.clearFeatures();
+        var localIp = _this.getLocalIp();
+        var ipSeg = localIp.split('.');
+        ipSeg.pop();
+        ipSeg.pop();
+        var ips = [];
+        const context = { ips: [] ,ipSeg:ipSeg ,localIp:localIp,http:http,utools:utools};
+        vm.createContext(context);//return;
+        code = `for (let j = 0; j < 256; j++) {
+            for (let i = 0; i < 256; i++) {
+                var ip = ipSeg.join('.') + '.' + j + '.' + i;
+                (function (ip) {
+                    http.get('http://'+ip+':8891/detect', {
+                        headers: {
+                            'ip': localIp,
+                            'id': utools.getLocalId()
+                        }
+                    }, (res) => {
+                        console.log(ip);
+                        console.log('res:', res);
+                        if (ip == localIp) return;
+                        ips.push(ip);
+                        _this.addFeature(ip, res.headers.id);
+                        res.resume();
+                    }).on('error', (err) => {});
+                })(ip);
+
+            }
+        }`;
+        try{
+            vm.runInContext(code, context);console.log('vm:',context);
+        }catch(e){
+            console.log(e);
+        }
+        return ips;
+    },
+    detectDevice2: function () {
 
         var _this = this;
         this.clearFeatures();
@@ -114,15 +196,15 @@ module.exports = {
     getPlatform: function () {
         if (utools.isMacOs()) {
             console.log('mac');
-            return 'mac';
+            return runTime.platform = 'mac';
         }
         if (utools.isWindows()) {
             console.log('win');
-            return 'win';
+            return runTime.platform = 'win';
         }
         if (utools.isLinux()) {
             console.log('linux');
-            return 'linux';
+            return runTime.platform = 'linux';
         }
     },
     md5(str) {

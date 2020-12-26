@@ -86,6 +86,11 @@ utools.onPluginReady(() => {
                 runTime.setting.sharePath = path[0];
             return !!path;
         },
+        detect: function(ipSeg){console.log('sssssssddd');
+            setTimeout(function () {
+                Utils.detectDevice(ipSeg);
+            }, 0);
+        },
         clearDB: function (doc) {
             if (doc) return utools.db.remove(runTime.localId + ':' + doc);
             utools.db.remove(runTime.localId + ':settings');

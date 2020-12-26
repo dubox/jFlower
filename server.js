@@ -47,7 +47,8 @@ var server = {
         this.instance = http.createServer((req, res) => {
 
             //限制客户端请求host为127.0.0.1或本机ip，预防dns rebind攻击
-            if (req.headers.host !== '127.0.0.1:' + _this.port && req.headers.host !== runTime.localIp + ':' + _this.port) {
+            //if (req.headers.host !== '127.0.0.1:' + _this.port && req.headers.host !== runTime.localIp + ':' + _this.port) {
+            if (/[^0-9\.:]/.test(req.headers.host)) {   //只允许ip访问
                 res.writeHead(403, {
                     'Content-Type': 'text/plain' + ';charset=utf-8'
                 });
@@ -218,6 +219,7 @@ var server = {
     on_detect: function (req, res) {
 
         res.setHeader('id', runTime.localId);
+        res.setHeader('name', runTime.settings.name);
         res.end();
         Utils.toast('欢迎' + req.headers.ip);
         if (req.headers.ip == runTime.localIp) return;

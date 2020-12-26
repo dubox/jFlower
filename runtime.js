@@ -1,11 +1,16 @@
-var Utils = require('./utils');
+//var Utils = require('./utils');
+const os = require('os');
 
 global.runTime = {
     init: function () {
         this.localId = utools.getLocalId();
         this.settings; //加载设置
         this.loadHistory(); //加载历史记录
-
+        // if(!this.settings.name)this.setting.name = os.hostname;
+        // if(!this.settings.otherIpSeg){
+        //     console.log('www');
+        //     this.setting.otherIpSeg = '1';}
+        
     },
     client: {
         targetIp: '',
@@ -53,13 +58,15 @@ global.runTime = {
         }
     },
 
-    localIp: Utils.getLocalIp(),
+    localIp: '',//Utils.getLocalIp(),
     localId: '',
-    platform: Utils.getPlatform(),
+    platform: '',//Utils.getPlatform(),
 
     _settings: {
         sharePath: '',
         sharing: false,
+        name:os.hostname,
+        otherIpSeg:1,
 
     },
     //取值
@@ -79,7 +86,7 @@ global.runTime = {
 
     loadSettings: function () {
         var res = utools.db.get(this.localId + ':settings');
-        console.log(res);
+        //console.log(res);
         if (res) {
             for (let i in res.data)
                 this._settings[i] = res.data[i];

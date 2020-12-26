@@ -12,7 +12,7 @@ app.ui = new Vue({
             history: app.history
         },
         settings: app.settings,
-        drawer: false
+        drawer: false,
     },
     computed: {
         speedSend: function () {
