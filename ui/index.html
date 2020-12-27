@@ -205,7 +205,7 @@
             <Divider orientation="left">扫描其他网段的主机</Divider>
             <Row>
                 <i-col span="20">
-                    <input-number size="small" :max="255" :min="0" :step="1" style="width: 100%;" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></input-number>
+                    <i-input size="small" :number="true" :max="255" :min="0" :step="1" style="width: 100%;" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></i-input>
                 </i-col>
                 <i-col span="4">
                     <i-button type="info" size="small" @click="app.detect(settings.otherIpSeg)">go</i-button>

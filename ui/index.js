@@ -71,6 +71,7 @@ app.ui = new Vue({
     watch: {
         settings: {
             handler(newVal) {
+                console.log('newVal:', newVal);
                 app.updSettings();
             },
             deep: true

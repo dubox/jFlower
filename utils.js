@@ -38,7 +38,7 @@ module.exports = {
             }
         }
     },
-    addFeature: function (ip ,name, id) {
+    addFeature: function (ip, name, id) {
         utools.setFeature({
             "code": "" + ip,
             "explain": `发送给：${name}(${ip})`,
@@ -80,46 +80,101 @@ module.exports = {
             ]
         })
     },
+    detectDevice5: function (_ipSeg) {
+        var _this = this;
+        //this.clearFeatures();
+        var localId = utools.getLocalId();
+        var localIp = _this.getLocalIp();
+        var ipSeg = localIp.split('.');
+        ipSeg = ipSeg[0] + '.' + ipSeg[1];
+
+        console.log(ipSeg);
+
+        var ips = [];
+
+        for (let j = 0; j < 256; j++) {
+            for (let i = 0; i < 256; i++) {
+                var ip = ipSeg + '.' + j + '.' + i;
+                (function (ip) {
+                    //console.log(ip, '-', new Date().getTime());
+                    const req = http.get(`http://${ip}:8891/detect`, {
+                        headers: {
+                            'ip': localIp,
+                            'id': localId,
+                            'name': runTime.settings.name
+                        },
+                        timeout: 100,
+                    }, (res) => {
+                        console.log(ip);
+                        console.log('res:', res);
+                        if (ip == localIp) return;
+                        ips.push(ip);
+                        _this.addFeature(ip, res.headers.name, res.headers.id);
+                        res.resume();
+                    }).on('timeout', () => {
+                        req.destroy();
+                    }).on('error', (err) => {
+                        utools.removeFeature(ip);
+                        if (i == 255)
+                            console.log(ip, '-', new Date().getTime());
+                    });
+                })(ip);
+            }
+        }
+    },
     detectDevice: function (_ipSeg) {
         var _this = this;
         //this.clearFeatures();
         var localId = utools.getLocalId();
         var localIp = _this.getLocalIp();
-        if(!(ipSeg = _ipSeg)){
-            var ipSeg = localIp.split('.');
-            ipSeg = ipSeg[2];
+        var ipSeg = localIp.split('.');
+        if (typeof _ipSeg == 'undefined') {
+            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
+        } else {
+            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + _ipSeg;
         }
-        
+        console.log(ipSeg);
+
         var ips = [];
-        
-                for (let i = 0; i < 256; i++) {
-                    var ip = '192.168.' + ipSeg + '.' + i;
-                    (function (ip) {//console.log(ip);
-                        http.get(`http://${ip}:8891/detect`,{
-                            headers: {
-                                'ip': localIp,
-                                'id': localId,
-                                'name': runTime.settings.name
-                            },
-                            timeout:200
-                        }, (res) => {
-                            console.log(ip);
-                            console.log('res:', res);
-                            if (ip == localIp) return;
-                            ips.push(ip);
-                            _this.addFeature(ip,  res.headers.name,res.headers.id);
-                            res.resume();
-                        }).on('error', (err) => {utools.removeFeature(ip);});
-                    })(ip);
-    
-                }
-            
-        
+
+        for (let i = 0; i < 256; i++) {
+            var ip = ipSeg + '.' + i;
+            (function (ip) {
+                //console.log(ip, '-', new Date().getTime());
+                const req = http.get(`http://${ip}:8891/detect`, {
+                    headers: {
+                        'ip': localIp,
+                        'id': localId,
+                        'name': runTime.settings.name
+                    },
+                    timeout: 100,
+                }, (res) => {
+                    console.log(ip);
+                    console.log('res:', res);
+                    if (ip == localIp) return;
+                    ips.push(ip);
+                    _this.addFeature(ip, res.headers.name, res.headers.id);
+                    res.resume();
+                    if (i == 255 && typeof _ipSeg != 'undefined')
+                        _this.toast('扫描完毕！');
+                }).on('timeout', () => {
+                    // This handler will be called for both of shortTimeout and longTimeout.
+                    req.destroy();
+                }).on('error', (err) => {
+                    //console.log(ip, '-', new Date().getTime());
+                    utools.removeFeature(ip);
+                    if (i == 255 && typeof _ipSeg != 'undefined')
+                        _this.toast('扫描完毕！');
+                });
+            })(ip);
+        }
     },
     detectDevice4: function () {
         if (isMainThread) {
             const worker = new Worker('./detect.js');
-            worker.on('message',function(data){console.log('message:',data)});
+            worker.on('message', function (data) {
+                console.log('message:', data)
+            });
         }
     },
     detectDevice3: function () {
@@ -131,8 +186,14 @@ module.exports = {
         ipSeg.pop();
         ipSeg.pop();
         var ips = [];
-        const context = { ips: [] ,ipSeg:ipSeg ,localIp:localIp,http:http,utools:utools};
-        vm.createContext(context);//return;
+        const context = {
+            ips: [],
+            ipSeg: ipSeg,
+            localIp: localIp,
+            http: http,
+            utools: utools
+        };
+        vm.createContext(context); //return;
         code = `for (let j = 0; j < 256; j++) {
             for (let i = 0; i < 256; i++) {
                 var ip = ipSeg.join('.') + '.' + j + '.' + i;
@@ -154,45 +215,15 @@ module.exports = {
 
             }
         }`;
-        try{
-            vm.runInContext(code, context);console.log('vm:',context);
-        }catch(e){
+        try {
+            vm.runInContext(code, context);
+            console.log('vm:', context);
+        } catch (e) {
             console.log(e);
         }
         return ips;
     },
-    detectDevice2: function () {
 
-        var _this = this;
-        this.clearFeatures();
-        var localIp = _this.getLocalIp();
-        var ipSeg = localIp.split('.');
-        ipSeg.pop();
-        ipSeg.pop();
-        var ips = [];
-        for (let j = 0; j < 256; j++) {
-            for (let i = 0; i < 256; i++) {
-                var ip = ipSeg.join('.') + '.' + j + '.' + i;
-                (function (ip) {
-                    http.get(`http://${ip}:8891/detect`, {
-                        headers: {
-                            'ip': localIp,
-                            'id': utools.getLocalId()
-                        }
-                    }, (res) => {
-                        console.log(ip);
-                        console.log('res:', res);
-                        if (ip == localIp) return;
-                        ips.push(ip);
-                        _this.addFeature(ip, res.headers.id);
-                        res.resume();
-                    }).on('error', (err) => {});
-                })(ip);
-
-            }
-        }
-        return ips;
-    },
     getPlatform: function () {
         if (utools.isMacOs()) {
             console.log('mac');
