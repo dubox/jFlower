@@ -45,6 +45,10 @@ app.ui = new Vue({
             }
 
             return hsy;
+        },
+        ipPrefix: function () {
+            var seg = this.runTime.localIp.split('.');
+            return seg[0] + '.' + seg[1] + '.';
         }
     },
     methods: {

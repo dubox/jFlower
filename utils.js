@@ -147,10 +147,10 @@ module.exports = {
                         'id': localId,
                         'name': runTime.settings.name
                     },
-                    timeout: 100,
+                    timeout: 300,
                 }, (res) => {
                     console.log(ip);
-                    console.log('res:', res);
+                    console.log('res.headers:', res.headers);
                     if (ip == localIp) return;
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.name, res.headers.id);
