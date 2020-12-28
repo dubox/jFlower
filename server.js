@@ -217,16 +217,14 @@ var server = {
         });
     },
     on_detect: function (req, res) {
-
-        res.setHeader('Id', runTime.localId);
-        res.setHeader('Name', runTime.settings.name);
-        res.writeHead(200, {
-            //'id': runTime.localId,
-        });
-        res.end('');
-        Utils.toast('欢迎' + req.headers.ip);
+        res.setHeader('id', runTime.localId);
+        res.setHeader('name', runTime.settings.name);
+        res.end();
         if (req.headers.ip == runTime.localIp) return;
-        Utils.addFeature(req.headers.ip, req.headers.id);
+
+        console.log('req.headers:', req.headers);
+        Utils.addFeature(req.headers.ip, req.headers.name);
+        Utils.toast(`发现${req.headers.name}(${req.headers.ip})`);
 
     },
     on_close: function (req, res) {

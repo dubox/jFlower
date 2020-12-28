@@ -143,6 +143,7 @@ module.exports = {
                 //console.log(ip, '-', new Date().getTime());
                 const req = http.get(`http://${ip}:8891/detect`, {
                     headers: {
+                        'cmd': 'detect',
                         'ip': localIp,
                         'id': localId,
                         'name': runTime.settings.name
