@@ -153,6 +153,7 @@ module.exports = {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
                     if (ip == localIp) return;
+                    if (!res.headers.id) return;
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.name, res.headers.id);
                     res.resume();

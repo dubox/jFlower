@@ -217,6 +217,10 @@ var server = {
         });
     },
     on_detect: function (req, res) {
+        if (!this.runTime.settings.canBeFound) {
+            res.end();
+            return;
+        }
         res.setHeader('id', runTime.localId);
         res.setHeader('name', runTime.settings.name);
         res.end();

@@ -10,7 +10,7 @@ global.runTime = {
         // if(!this.settings.otherIpSeg){
         //     console.log('www');
         //     this.setting.otherIpSeg = '1';}
-        
+
     },
     client: {
         targetIp: '',
@@ -58,15 +58,16 @@ global.runTime = {
         }
     },
 
-    localIp: '',//Utils.getLocalIp(),
+    localIp: '', //Utils.getLocalIp(),
     localId: '',
-    platform: '',//Utils.getPlatform(),
+    platform: '', //Utils.getPlatform(),
 
     _settings: {
         sharePath: '',
         sharing: false,
-        name:os.hostname,
-        otherIpSeg:1,
+        name: os.hostname,
+        otherIpSeg: 1,
+        canBeFound: true,
 
     },
     //取值

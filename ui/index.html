@@ -111,6 +111,11 @@
             font: 14px;
             color: #657180;
         }
+        .ivu-drawer-left .ld{
+            font-size: 14px;
+            color: #657180;
+            margin: 10px 0;
+        }
     </style>
 </head>
 
@@ -193,7 +198,7 @@
         </div>
 
         <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
-            <Divider orientation="left">设置本机名称</Divider>
+            <Divider :class="'ld'" orientation="left">设置本机名称</Divider>
             <Row>
                 <i-col span="20">
                     <i-input  size="small" :value="settings.name" @on-blur="if($event.target.composing)return;settings.name =$event.target.value;"></i-input>
@@ -202,7 +207,7 @@
                     <i-button type="info" size="small" @click="app.detect()">ok</i-button>
                 </i-col>
             </Row>
-            <Divider orientation="left">扫描其他网段的主机</Divider>
+            <Divider :class="'ld'" orientation="left">扫描其他网段的主机</Divider>
             <Row>
                 <i-col span="20">
                     {{ipPrefix}} <i-input size="small" style="width: 50px;" :number="true" :max="255" :min="0" :step="1" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></i-input> .0~255
@@ -211,15 +216,17 @@
                     <i-button type="info" size="small" @click="app.detect(settings.otherIpSeg)">go</i-button>
                 </i-col>
             </Row>
-            <Divider orientation="left">目录分享</Divider>
+            <Divider :class="'ld'" orientation="left">目录分享</Divider>
             <Row>
                 <i-col span="24">
                     <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
-                    <i-switch v-model="settings.sharing"></i-switch>
+                    <i-switch v-model="settings.sharing" size="small"></i-switch>
                 </i-col>
                 <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
                 </i-col>
             </Row>
+            <Divider :class="'ld'" orientation="left">可被其他主机发现：<i-switch v-model="settings.canBeFound" size="small"></i-switch></Divider>
+            
         </Drawer>
     </div>
 
