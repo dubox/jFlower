@@ -1,7 +1,8 @@
 //var Utils = require('./utils');
 const os = require('os');
 
-global.runTime = {
+//global.runTime = 
+module.exports = {
     init: function () {
         this.localId = utools.getLocalId();
         this.settings; //加载设置
@@ -66,8 +67,21 @@ global.runTime = {
         sharePath: '',
         sharing: false,
         name: os.hostname,
-        otherIpSeg: 1,
+        otherIpSeg: -1,
         canBeFound: true,
+        findingCode: {
+            isOnly: false, //仅拥有一样暗号的主机可以找到我
+            code: '' //暗号
+        }
+        // hosts: {
+        //     aaswws133s2s:{
+        //         id:'aaswws133s2s',
+        //         ip:'192.168.1.111',
+        //         name:'abc',
+
+        //         lastActive:1287554455
+        //     }
+        // },
 
     },
     //取值

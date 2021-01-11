@@ -1,4 +1,4 @@
-require('./runtime');
+global.runTime = require('./runtime');
 var Server = require('./server');
 var Utils = require('./utils');
 var Clients = require('./clients');
@@ -32,6 +32,8 @@ utools.onPluginEnter(({
         console.log('server check ok');
         setTimeout(function () {
             Utils.detectDevice();
+            if (runTime.settings.otherIpSeg >= 0)
+                Utils.detectDevice(runTime.settings.otherIpSeg);
             window.app.ui.runTime.serverState = true;
         }, 0);
 
@@ -86,9 +88,11 @@ utools.onPluginReady(() => {
                 runTime.setting.sharePath = path[0];
             return !!path;
         },
-        detect: function(ipSeg){console.log('sssssssddd');
+        detect: function (ipSeg) {
+            console.log('sssssssddd');
             setTimeout(function () {
                 Utils.detectDevice(ipSeg);
+                if (ipSeg) Utils.detectDevice();
             }, 0);
         },
         clearDB: function (doc) {

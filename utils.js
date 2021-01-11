@@ -98,10 +98,12 @@ module.exports = {
                 (function (ip) {
                     //console.log(ip, '-', new Date().getTime());
                     const req = http.get(`http://${ip}:8891/detect`, {
+                        //todo 头部增加暗号
                         headers: {
                             'ip': localIp,
                             'id': localId,
-                            'name': runTime.settings.name
+                            'name': runTime.settings.name,
+                            'findingCode': runTime.settings.findingCode.code
                         },
                         timeout: 100,
                     }, (res) => {
@@ -130,8 +132,10 @@ module.exports = {
         var ipSeg = localIp.split('.');
         if (typeof _ipSeg == 'undefined') {
             ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
-        } else {
+        } else if (_ipSeg >= 0 && _ipSeg < 256) {
             ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + _ipSeg;
+        } else {
+            return;
         }
         console.log(ipSeg);
 
@@ -141,14 +145,16 @@ module.exports = {
             var ip = ipSeg + '.' + i;
             (function (ip) {
                 //console.log(ip, '-', new Date().getTime());
+                utools.removeFeature(ip);
                 const req = http.get(`http://${ip}:8891/detect`, {
                     headers: {
                         'cmd': 'detect',
                         'ip': localIp,
                         'id': localId,
-                        'name': runTime.settings.name
+                        'name': runTime.settings.name,
+                        'findingCode': runTime.settings.findingCode.code
                     },
-                    timeout: 300,
+                    timeout: 400,
                 }, (res) => {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
@@ -164,7 +170,7 @@ module.exports = {
                     req.destroy();
                 }).on('error', (err) => {
                     //console.log(ip, '-', new Date().getTime());
-                    utools.removeFeature(ip);
+
                     if (i == 255 && typeof _ipSeg != 'undefined')
                         _this.toast('扫描完毕！');
                 });

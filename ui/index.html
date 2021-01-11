@@ -113,7 +113,7 @@
         }
         .ivu-drawer-left .ld{
             font-size: 14px;
-            color: #657180;
+            color: #353b43;
             margin: 10px 0;
         }
     </style>
@@ -225,7 +225,18 @@
                 <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
                 </i-col>
             </Row>
-            <Divider :class="'ld'" orientation="left">可被其他主机发现：<i-switch v-model="settings.canBeFound" size="small"></i-switch></Divider>
+            <Divider :class="'ld'" orientation="left">暗号</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-input  size="small" :value="settings.findingCode.code" @on-blur="if($event.target.composing)return;settings.findingCode.code =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" >ok</i-button>
+                </i-col>
+                <i-col span="24">
+                    仅相同暗号的主机可以找到我<i-switch v-model="settings.findingCode.isOnly" size="small"></i-switch>
+                </i-col>
+            </Row>
             
         </Drawer>
     </div>

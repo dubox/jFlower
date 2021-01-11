@@ -74,9 +74,18 @@ app.ui = new Vue({
     },
     watch: {
         settings: {
-            handler(newVal) {
-                console.log('newVal:', newVal);
+            handler(newVal, oldVal) {
+                // console.log('newVal:', newVal);
+                // console.log('oldVal:', oldVal);
+                // console.log(newVal.findingCode.isOnly, oldVal.findingCode.isOnly)
+                // if (newVal.findingCode.isOnly != oldVal.findingCode.isOnly) {
+                //     if (newVal.otherIpSeg)
+                //         app.detect(newVal.otherIpSeg);
+                //     app.detect();
+                // }
+
                 app.updSettings();
+
             },
             deep: true
         },

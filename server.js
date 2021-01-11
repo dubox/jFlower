@@ -60,6 +60,16 @@ var server = {
                 res.end();
                 return;
             }
+
+            //检查暗号
+            if (runTime.settings.findingCode.isOnly && req.headers.findingCode != runTime.settings.findingCode.code) {
+                res.writeHead(404, {
+                    'Content-Type': 'text/plain' + ';charset=utf-8'
+                });
+                res.end();
+                return;
+            }
+
             //req.setEncoding('utf8');
             //console.log('req:', req);
             res.on('end', () => {
@@ -217,7 +227,7 @@ var server = {
         });
     },
     on_detect: function (req, res) {
-        if (!this.runTime.settings.canBeFound) {
+        if (!runTime.settings.canBeFound) {
             res.end();
             return;
         }
@@ -228,7 +238,7 @@ var server = {
 
         console.log('req.headers:', req.headers);
         Utils.addFeature(req.headers.ip, req.headers.name);
-        Utils.toast(`发现${req.headers.name}(${req.headers.ip})`);
+        //Utils.toast(`发现${req.headers.name}(${req.headers.ip})`);
 
     },
     on_close: function (req, res) {

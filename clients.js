@@ -125,7 +125,8 @@ module.exports = {
         //'Transfer-Encoding' : 'chunked',
         'cmd': type,
         'ip': Utils.getLocalIp(),
-        'id': runTime.localId
+        'id': runTime.localId,
+        'findingCode': runTime.settings.findingCode.code
       },
       timeout: 2000
     };
@@ -150,7 +151,7 @@ module.exports = {
 
     req.on('error', (e) => {
       console.error(`请求遇到问题: ${e.message}`);
-      cb(e.message);
+      cb(e, ip);
     });
     req.on('end', (e) => {
       console.log(`req end`);
@@ -174,10 +175,11 @@ module.exports = {
     }
     runTime.addHistory();
   },
-  sentCallback: function (err) {
+  sentCallback: function (err, data) {
     console.log('cb');
     if (err) {
-      Utils.toast('error');
+      utools.removeFeature(data);
+      Utils.toast(`(${err.code})${e.message}`);
     } else {
 
       // var content = runTime.client.content;
