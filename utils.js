@@ -80,6 +80,60 @@ module.exports = {
             ]
         })
     },
+
+    detectDevice: function (_ipSeg) {
+        var _this = this;
+        //this.clearFeatures();
+        var localId = utools.getLocalId();
+        var localIp = _this.getLocalIp();
+        var ipSeg = localIp.split('.');
+        if (typeof _ipSeg == 'undefined') {
+            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
+        } else if (_ipSeg >= 0 && _ipSeg < 256) {
+            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + _ipSeg;
+        } else {
+            return;
+        }
+        console.log(ipSeg);
+
+        var ips = [];
+
+        for (let i = 0; i < 256; i++) {
+            var ip = ipSeg + '.' + i;
+            (function (ip) {
+                //console.log(ip, '-', new Date().getTime());
+
+                const req = http.get(`http://${ip}:8891/detect`, {
+                    headers: {
+                        'cmd': 'detect',
+                        'ip': localIp,
+                        'id': localId,
+                        'name': runTime.settings.name,
+                        'findingCode': runTime.settings.findingCode.code
+                    },
+                    timeout: 400,
+                }, (res) => {
+                    console.log(ip);
+                    console.log('res.headers:', res.headers);
+                    if (ip == localIp) return;
+                    if (!res.headers.id) return;
+                    ips.push(ip);
+                    _this.addFeature(ip, res.headers.name, res.headers.id);
+                    res.resume();
+                    if (i == 255 && typeof _ipSeg != 'undefined')
+                        _this.toast('扫描完毕！');
+                }).on('timeout', () => {
+                    // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
+                    req.destroy();
+                }).on('error', (err) => {
+                    //console.log(ip);
+                    utools.removeFeature(ip);
+                    if (i == 255 && typeof _ipSeg != 'undefined')
+                        _this.toast('扫描完毕！');
+                });
+            })(ip);
+        }
+    },
     detectDevice5: function (_ipSeg) {
         var _this = this;
         //this.clearFeatures();
@@ -122,59 +176,6 @@ module.exports = {
                     });
                 })(ip);
             }
-        }
-    },
-    detectDevice: function (_ipSeg) {
-        var _this = this;
-        //this.clearFeatures();
-        var localId = utools.getLocalId();
-        var localIp = _this.getLocalIp();
-        var ipSeg = localIp.split('.');
-        if (typeof _ipSeg == 'undefined') {
-            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
-        } else if (_ipSeg >= 0 && _ipSeg < 256) {
-            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + _ipSeg;
-        } else {
-            return;
-        }
-        console.log(ipSeg);
-
-        var ips = [];
-
-        for (let i = 0; i < 256; i++) {
-            var ip = ipSeg + '.' + i;
-            (function (ip) {
-                //console.log(ip, '-', new Date().getTime());
-                utools.removeFeature(ip);
-                const req = http.get(`http://${ip}:8891/detect`, {
-                    headers: {
-                        'cmd': 'detect',
-                        'ip': localIp,
-                        'id': localId,
-                        'name': runTime.settings.name,
-                        'findingCode': runTime.settings.findingCode.code
-                    },
-                    timeout: 400,
-                }, (res) => {
-                    console.log(ip);
-                    console.log('res.headers:', res.headers);
-                    if (ip == localIp) return;
-                    if (!res.headers.id) return;
-                    ips.push(ip);
-                    _this.addFeature(ip, res.headers.name, res.headers.id);
-                    res.resume();
-                    if (i == 255 && typeof _ipSeg != 'undefined')
-                        _this.toast('扫描完毕！');
-                }).on('timeout', () => {
-                    // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
-                    req.destroy();
-                }).on('error', (err) => {
-                    //console.log(ip, '-', new Date().getTime());
-
-                    if (i == 255 && typeof _ipSeg != 'undefined')
-                        _this.toast('扫描完毕！');
-                });
-            })(ip);
         }
     },
     detectDevice4: function () {
