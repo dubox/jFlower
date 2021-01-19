@@ -102,7 +102,8 @@ module.exports = {
             var ip = ipSeg + '.' + i;
             (function (ip) {
                 //console.log(ip, '-', new Date().getTime());
-
+                if (ip == localIp) return;
+                utools.removeFeature(ip);
                 const req = http.get(`http://${ip}:8891/detect`, {
                     headers: {
                         'cmd': 'detect',
@@ -115,7 +116,7 @@ module.exports = {
                 }, (res) => {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
-                    if (ip == localIp) return;
+                    
                     if (!res.headers.id) return;
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.name, res.headers.id);
@@ -127,7 +128,7 @@ module.exports = {
                     req.destroy();
                 }).on('error', (err) => {
                     //console.log(ip);
-                    utools.removeFeature(ip);
+                    
                     if (i == 255 && typeof _ipSeg != 'undefined')
                         _this.toast('扫描完毕！');
                 });
