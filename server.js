@@ -62,7 +62,7 @@ var server = {
             }
 
             //检查暗号
-            if (runTime.settings.findingCode.isOnly && req.headers.findingCode != runTime.settings.findingCode.code) {
+            if (runTime.settings.findingCode.isOnly && req.headers.findingcode != runTime.settings.findingCode.code) {
                 res.writeHead(404, {
                     'Content-Type': 'text/plain' + ';charset=utf-8'
                 });
