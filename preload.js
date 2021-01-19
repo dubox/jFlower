@@ -35,6 +35,7 @@ utools.onPluginEnter(({
             if (runTime.settings.otherIpSeg >= 0)
                 Utils.detectDevice(runTime.settings.otherIpSeg);
             window.app.ui.runTime.serverState = true;
+            window.app.localIp = runTime.localIp;
         }, 0);
 
     });

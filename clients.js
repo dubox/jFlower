@@ -178,7 +178,7 @@ module.exports = {
   sentCallback: function (err, data) {
     console.log('cb');
     if (err) {
-      utools.removeFeature(data);
+      //utools.removeFeature(data);
       Utils.toast(`(${err.code})${e.message}`);
     } else {
 
