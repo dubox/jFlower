@@ -124,8 +124,8 @@ module.exports = {
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.name, res.headers.id);
                     res.resume();
-                    if (i == 255 && typeof _ipSeg != 'undefined')
-                        _this.toast('扫描完毕！');
+                    if (i == 255) // && typeof _ipSeg != 'undefined'
+                        _this.toast(ipSeg + '.0-255 扫描完毕！');
                 }).on('timeout', () => {
                     // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
                     req.destroy();
@@ -133,8 +133,8 @@ module.exports = {
 
                     utools.removeFeature(ip);
 
-                    if (i == 255 && typeof _ipSeg != 'undefined')
-                        _this.toast('扫描完毕！');
+                    if (i == 255) //&& typeof _ipSeg != 'undefined'
+                        _this.toast(ipSeg + '.0-255 扫描完毕！');
                 });
             })(ip);
         }

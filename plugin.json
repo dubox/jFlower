@@ -9,9 +9,7 @@
 	"features": [{
 			"code": "main",
 			"explain": "jFlower(局发)",
-			"cmds": ["局发", "jFlower"
-
-			]
+			"cmds": ["局发", "jFlower"]
 		}
 
 

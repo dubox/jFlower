@@ -26,20 +26,20 @@ utools.onPluginEnter(({
             Clients.sendText(code, payload, Clients.sentCallback);
         }
 
+    } else {
+        window.app.ui.runTime.serverState = false;
+        Server.check(() => {
+            console.log('server check ok');
+            setTimeout(function () {
+                Utils.detectDevice();
+                if (runTime.settings.otherIpSeg >= 0)
+                    Utils.detectDevice(runTime.settings.otherIpSeg);
+                window.app.ui.runTime.serverState = true;
+                window.app.localIp = runTime.localIp;
+            }, 0);
+
+        });
     }
-    window.app.ui.runTime.serverState = false;
-    Server.check(() => {
-        console.log('server check ok');
-        setTimeout(function () {
-            Utils.detectDevice();
-            if (runTime.settings.otherIpSeg >= 0)
-                Utils.detectDevice(runTime.settings.otherIpSeg);
-            window.app.ui.runTime.serverState = true;
-            window.app.localIp = runTime.localIp;
-        }, 0);
-
-    });
-
     //滚动到列表底部
     setTimeout(() => {
         window.document.querySelector('#history .ivu-scroll-content').scrollIntoView(0);
