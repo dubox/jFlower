@@ -112,11 +112,11 @@ module.exports = {
                         'name': runTime.settings.name,
                         'findingCode': runTime.settings.findingCode.code
                     },
-                    timeout: 400,
+                    timeout: 600,
                 }, (res) => {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
-                    
+
                     if (!res.headers.id) return;
                     ips.push(ip);
                     _this.addFeature(ip, res.headers.name, res.headers.id);
@@ -127,8 +127,12 @@ module.exports = {
                     // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
                     req.destroy();
                 }).on('error', (err) => {
-                    //console.log(ip);
-                    
+                    // if (ip == '192.168.1.102' || ip == '192.168.1.103') {
+                    //     console.log(ip);
+                    //     console.log(err);
+                    // }
+
+
                     if (i == 255 && typeof _ipSeg != 'undefined')
                         _this.toast('扫描完毕！');
                 });
