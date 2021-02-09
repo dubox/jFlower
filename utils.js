@@ -103,7 +103,7 @@ module.exports = {
             (function (ip) {
                 //console.log(ip, '-', new Date().getTime());
                 if (ip == localIp) return;
-                utools.removeFeature(ip);
+
                 const req = http.get(`http://${ip}:8891/detect`, {
                     headers: {
                         'cmd': 'detect',
@@ -112,9 +112,12 @@ module.exports = {
                         'name': runTime.settings.name,
                         'findingCode': runTime.settings.findingCode.code
                     },
-                    timeout: 600,
+                    timeout: 2300,
                 }, (res) => {
                     console.log(ip);
+                    if (ip == '192.168.1.101') {
+                        console.log('end', new Date().getTime());
+                    }
                     console.log('res.headers:', res.headers);
 
                     if (!res.headers.id) return;
@@ -127,11 +130,8 @@ module.exports = {
                     // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
                     req.destroy();
                 }).on('error', (err) => {
-                    // if (ip == '192.168.1.102' || ip == '192.168.1.103') {
-                    //     console.log(ip);
-                    //     console.log(err);
-                    // }
 
+                    utools.removeFeature(ip);
 
                     if (i == 255 && typeof _ipSeg != 'undefined')
                         _this.toast('扫描完毕！');

@@ -111,12 +111,12 @@ module.exports = {
     updSettings: function () {
         let res = utools.db.get(this.localId + ':settings'); // console.log(this.localId, res); console.log(this);
         rev = res ? res._rev : '';
-        res = utools.db.put({
+        res2 = utools.db.put({
             _id: this.localId + ':settings',
             _rev: rev,
-            data: this._settings
+            data: JSON.parse(JSON.stringify(this._settings))
         });
-        console.log(res);
+        console.log(res2);
 
     },
     set: function (key, value) {

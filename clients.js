@@ -139,17 +139,17 @@ module.exports = {
     const req = http.request(options, (res) => {
       console.log(`状态码: ${res.statusCode}`);
       console.log(`响应头: ${JSON.stringify(res.headers)}`);
-      
+
       res.setEncoding('utf8');
       res.on('data', (chunk) => {
         console.log(`响应主体: ${chunk}`);
       });
       res.on('end', () => {
         console.log('res end');
-        if(res.statusCode == 200)
-        cb(0);
-         else
-         cb(new Error(res.statusCode), ip);
+        if (res.statusCode == 200)
+          cb(0);
+        else
+          cb(new Error(res.statusCode), ip);
       });
     });
 

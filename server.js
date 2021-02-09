@@ -237,8 +237,9 @@ var server = {
         if (req.headers.ip == runTime.localIp) return;
 
         console.log('req.headers:', req.headers);
+        if (req.headers.findingcode != runTime.settings.findingCode.code) return; //如果暗号不一样 则不要被动添加对方
         Utils.addFeature(req.headers.ip, req.headers.name);
-        //Utils.toast(`发现${req.headers.name}(${req.headers.ip})`);
+        //Utils.toast(`${req.headers.name}(${req.headers.ip})发现了你`);
 
     },
     on_close: function (req, res) {
