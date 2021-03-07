@@ -72,7 +72,8 @@ module.exports = {
         findingCode: {
             isOnly: false, //仅拥有一样暗号的主机可以找到我
             code: '' //暗号
-        }
+        },
+        localIp: '' //用户指定的本地ip
         // hosts: {
         //     aaswws133s2s:{
         //         id:'aaswws133s2s',

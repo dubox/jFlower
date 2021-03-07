@@ -19,14 +19,20 @@ module.exports = {
         var map = [];
         var nif = os.networkInterfaces();
         console.log('nif:', nif);
+        runTime.localIp = '';
         for (let i in nif) {
             if (nif[i].length > 1)
                 for (let ii in nif[i]) {
-                    if (nif[i][ii].address.indexOf('192.168') === 0)
+                    //if (!runTime.localIp && nif[i][ii].address.indexOf('192.168') === 0)
+                    if (!runTime.localIp && nif[i][ii].family == 'IPv4' && !nif[i][ii].internal)
+                        runTime.localIp = nif[i][ii].address;
+                    if (nif[i][ii].address == runTime.settings.localIp)
                         return runTime.localIp = nif[i][ii].address;
                 }
         }
-        return '';
+        if (runTime.settings.localIp)
+            this.toast('未找到指定IP:' + runTime.settings.localIp);
+        return runTime.localIp;
     },
 
     clearFeatures: function () {
@@ -115,9 +121,6 @@ module.exports = {
                     timeout: 2300,
                 }, (res) => {
                     console.log(ip);
-                    if (ip == '192.168.1.101') {
-                        console.log('end', new Date().getTime());
-                    }
                     console.log('res.headers:', res.headers);
 
                     if (!res.headers.id) return;
@@ -125,7 +128,7 @@ module.exports = {
                     _this.addFeature(ip, res.headers.name, res.headers.id);
                     res.resume();
                     if (i == 255) // && typeof _ipSeg != 'undefined'
-                        _this.toast(ipSeg + '.0-255 扫描完毕！');
+                        _this.toast(ipSeg + '.0~255 扫描完毕！');
                 }).on('timeout', () => {
                     // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
                     req.destroy();
@@ -134,10 +137,12 @@ module.exports = {
                     utools.removeFeature(ip);
 
                     if (i == 255) //&& typeof _ipSeg != 'undefined'
-                        _this.toast(ipSeg + '.0-255 扫描完毕！');
+                        _this.toast(ipSeg + '.0~255 扫描完毕！');
                 });
             })(ip);
         }
+        if (typeof _ipSeg == 'undefined' && runTime.settings.otherIpSeg >= 0)
+            this.detectDevice(runTime.settings.otherIpSeg);
     },
     detectDevice5: function (_ipSeg) {
         var _this = this;

@@ -4,7 +4,7 @@ var Utils = require('./utils');
 var Clients = require('./clients');
 
 
-console.log(`本机ip：${Utils.getLocalIp()}`);
+//console.log(`本机ip：${Utils.getLocalIp()}`);
 
 
 
@@ -32,10 +32,8 @@ utools.onPluginEnter(({
             console.log('server check ok');
             setTimeout(function () {
                 Utils.detectDevice();
-                if (runTime.settings.otherIpSeg >= 0)
-                    Utils.detectDevice(runTime.settings.otherIpSeg);
                 window.app.ui.runTime.serverState = true;
-                window.app.localIp = runTime.localIp;
+                window.app.ui.runTime.localIp = runTime.localIp;
             }, 0);
 
         });
@@ -90,10 +88,8 @@ utools.onPluginReady(() => {
             return !!path;
         },
         detect: function (ipSeg) {
-            console.log('sssssssddd');
             setTimeout(function () {
-                Utils.detectDevice(ipSeg);
-                if (ipSeg) Utils.detectDevice();
+                Utils.detectDevice();
             }, 0);
         },
         clearDB: function (doc) {

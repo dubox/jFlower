@@ -207,6 +207,15 @@
                     <i-button type="info" size="small" @click="app.detect()">ok</i-button>
                 </i-col>
             </Row>
+            <Divider :class="'ld'" orientation="left">设置本机IP</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-input  size="small" :value="settings.localIp" @on-blur="if($event.target.composing)return;settings.localIp =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
+                </i-col>
+            </Row>
             <Divider :class="'ld'" orientation="left">扫描其他网段的主机</Divider>
             <Row>
                 <i-col span="20">
