@@ -47,7 +47,7 @@ module.exports = {
     addFeature: function (ip, name, id) {
         utools.setFeature({
             "code": "" + ip,
-            "explain": `发送到：主机名(IP)`,
+            "explain": `发送给：主机名(IP)`,
             // "icon": "res/xxx.png",
             // "icon": "data:image/png;base64,xxx...",
             // "platform": ["win32", "darwin", "linux"]
@@ -55,7 +55,7 @@ module.exports = {
 
                 {
                     "type": "over",
-                    "label": `发送到：${name}(${ip})`,
+                    "label": `发送给：${name}(${ip})`,
                     // 排除的正则 (可选)
                     //"exclude":"/xxx/i",
                     // 长度限制（主输入框中的字符不少于） (可选)
@@ -65,7 +65,7 @@ module.exports = {
                 },
                 {
                     "type": "files",
-                    "label": `发送到：${name}(${ip})`,
+                    "label": `发送给：${name}(${ip})`,
                     // 支持file或directory (可选)
                     "fileType": "file",
                     // 文件名称正则匹配  (可选)
@@ -79,7 +79,7 @@ module.exports = {
                     // 类型，可能的值（img, files, regex, over）
                     "type": "img",
                     // 文字说明，在搜索列表中出现（必须）
-                    "label": `发送到：${name}(${ip})`,
+                    "label": `发送给：${name}(${ip})`,
                 },
 
 
