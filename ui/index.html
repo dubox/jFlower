@@ -116,6 +116,15 @@
             color: #353b43;
             margin: 10px 0;
         }
+        .info{
+            font-size: 12px;
+            color: #9ea7b4;
+        }
+        .bottom-line{
+            border-bottom: 1px solid #edeef0;
+            margin-bottom: 5px;
+            padding-bottom: 2px;
+        }
     </style>
 </head>
 
@@ -128,7 +137,7 @@
                     <Card :bordered="false" style="width:520px;margin: 50px auto;">
                         <div style="text-align:center">
                             <img src="img/logo.png" width="60%">
-                            <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp}}</h2>
+                            <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp + ':' +runTime.localPort}}</h2>
                                 <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h2>
                         </div>
                     </Card>
@@ -243,7 +252,28 @@
                     <i-button type="info" size="small" >ok</i-button>
                 </i-col>
                 <i-col span="24">
-                    仅相同暗号的主机可以找到我<i-switch v-model="settings.findingCode.isOnly" size="small"></i-switch>
+                    仅相同暗号的主机可以找到我:<i-switch v-model="settings.findingCode.isOnly" size="small"></i-switch>
+                </i-col>
+            </Row>
+            <Divider :class="'ld'" orientation="left">高级设置</Divider>
+            <Row :title="'若不清楚此项的含义，则保持默认'" :class="'bottom-line'">
+
+                <i-col span="10">设置本机端口:</i-col>
+                <i-col span="14">
+                    <i-input  size="small"  :number="true" :max="65535" :min="0" :step="1" :value="settings.localPort" @on-blur="if($event.target.composing)return;settings.localPort =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="24" :class="'info'">
+                    点击右上角logo > 完全退出，重新进入方可生效
+                </i-col>
+            </Row>
+            <Row :title="'建议与本机端口保持一致'" :class="'bottom-line'">
+
+                <i-col span="10">设置扫描端口:</i-col>
+                <i-col span="10">
+                    <i-input  size="small"  :number="true" :max="65535" :min="0" :step="1" :value="settings.targetPort" @on-blur="if($event.target.composing)return;settings.targetPort =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
                 </i-col>
             </Row>
             

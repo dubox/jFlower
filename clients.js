@@ -116,7 +116,7 @@ module.exports = {
 
     const options = {
       hostname: ip,
-      port: 8891,
+      port: runTime.settings.targetPort,
       path: '/' + type,
       method: 'POST',
       headers: {

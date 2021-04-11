@@ -11,7 +11,7 @@ const mp4 = require('./libs/mp4');
 var server = {
 
     instance: null,
-    port: 8891,
+    port: null,
     runTime: runTime.server,
     getClientIp: function (req) {
         return req.headers['x-forwarded-for'] ||
@@ -19,7 +19,11 @@ var server = {
             req.socket.remoteAddress ||
             req.connection.socket.remoteAddress;
     },
+    init: function () {
+        this.port = runTime.settings.localPort;
+    },
     check: function (cb) {
+        this.init();
         var _this = this;
         http.get('http://127.0.0.1:' + this.port + '/check', (res) => {
             res.resume();
@@ -91,7 +95,7 @@ var server = {
             }
 
 
-        }).listen(8891, cb); //ipv6 ,'::'
+        }).listen(this.port, cb); //ipv6 ,'::'
         this.instance.on('clientError', (err, socket) => {
             socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
             console.log(err);
@@ -232,13 +236,13 @@ var server = {
             return;
         }
         res.setHeader('id', runTime.localId);
-        res.setHeader('name', runTime.settings.name);
+        res.setHeader('name', encodeURIComponent(runTime.settings.name));
         res.end();
         if (req.headers.ip == runTime.localIp) return;
 
         console.log('req.headers:', req.headers);
         if (req.headers.findingcode != runTime.settings.findingCode.code) return; //如果暗号不一样 则不要被动添加对方
-        Utils.addFeature(req.headers.ip, req.headers.name);
+        Utils.addFeature(req.headers.ip, decodeURIComponent(req.headers.name));
         //Utils.toast(`${req.headers.name}(${req.headers.ip})发现了你`);
 
     },

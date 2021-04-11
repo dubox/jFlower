@@ -73,7 +73,9 @@ module.exports = {
             isOnly: false, //仅拥有一样暗号的主机可以找到我
             code: '' //暗号
         },
-        localIp: '' //用户指定的本地ip
+        localIp: '', //用户指定的本地ip
+        localPort: 8891, //本地端口，即server监听端口
+        targetPort: 8891, //目标端口，即需要扫描的其他主机的端口
         // hosts: {
         //     aaswws133s2s:{
         //         id:'aaswws133s2s',

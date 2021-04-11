@@ -34,6 +34,7 @@ utools.onPluginEnter(({
                 Utils.detectDevice();
                 window.app.ui.runTime.serverState = true;
                 window.app.ui.runTime.localIp = runTime.localIp;
+                window.app.ui.runTime.localPort = Server.port;
             }, 0);
 
         });

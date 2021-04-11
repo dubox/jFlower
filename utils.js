@@ -47,7 +47,7 @@ module.exports = {
     addFeature: function (ip, name, id) {
         utools.setFeature({
             "code": "" + ip,
-            "explain": `发送给：${name}(${ip})`,
+            "explain": `发送到：主机名(IP)`,
             // "icon": "res/xxx.png",
             // "icon": "data:image/png;base64,xxx...",
             // "platform": ["win32", "darwin", "linux"]
@@ -55,7 +55,7 @@ module.exports = {
 
                 {
                     "type": "over",
-                    "label": "发送文字",
+                    "label": `发送到：${name}(${ip})`,
                     // 排除的正则 (可选)
                     //"exclude":"/xxx/i",
                     // 长度限制（主输入框中的字符不少于） (可选)
@@ -65,7 +65,7 @@ module.exports = {
                 },
                 {
                     "type": "files",
-                    "label": "发送文件",
+                    "label": `发送到：${name}(${ip})`,
                     // 支持file或directory (可选)
                     "fileType": "file",
                     // 文件名称正则匹配  (可选)
@@ -79,7 +79,7 @@ module.exports = {
                     // 类型，可能的值（img, files, regex, over）
                     "type": "img",
                     // 文字说明，在搜索列表中出现（必须）
-                    "label": "发送图片"
+                    "label": `发送到：${name}(${ip})`,
                 },
 
 
@@ -110,22 +110,22 @@ module.exports = {
                 //console.log(ip, '-', new Date().getTime());
                 if (ip == localIp) return;
 
-                const req = http.get(`http://${ip}:8891/detect`, {
+                const req = http.get(`http://${ip}:${runTime.settings.targetPort}/detect`, {
                     headers: {
                         'cmd': 'detect',
                         'ip': localIp,
                         'id': localId,
-                        'name': runTime.settings.name,
+                        'name': encodeURIComponent(runTime.settings.name),
                         'findingCode': runTime.settings.findingCode.code
                     },
-                    timeout: 2300,
+                    timeout: 3300,
                 }, (res) => {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
 
                     if (!res.headers.id) return;
                     ips.push(ip);
-                    _this.addFeature(ip, res.headers.name, res.headers.id);
+                    _this.addFeature(ip, decodeURIComponent(res.headers.name), res.headers.id);
                     res.resume();
                     if (i == 255) // && typeof _ipSeg != 'undefined'
                         _this.toast(ipSeg + '.0~255 扫描完毕！');
