@@ -1,4 +1,5 @@
 const os = require('os');
+const fs = require('fs');
 const http = require('http');
 const md5 = require('./libs/md5');
 const vm = require('vm');
@@ -8,6 +9,10 @@ const {
     parentPort,
     workerData
 } = require('worker_threads');
+const logger = require('./libs/log');
+// const {
+//     runTime
+// } = require('./server');
 
 module.exports = {
     //runTime:runTime.common,
@@ -19,6 +24,7 @@ module.exports = {
         var map = [];
         var nif = os.networkInterfaces();
         console.log('nif:', nif);
+        this.log('nif:', nif);
         runTime.localIp = '';
         for (let i in nif) {
             if (nif[i].length > 1)
@@ -95,12 +101,13 @@ module.exports = {
         var ipSeg = localIp.split('.');
         if (typeof _ipSeg == 'undefined') {
             ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
-        } else if (_ipSeg >= 0 && _ipSeg < 256) {
-            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + _ipSeg;
+        } else if (/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(_ipSeg)) {
+            ipSeg = _ipSeg;
         } else {
             return;
         }
         console.log(ipSeg);
+        _this.log(ipSeg);
 
         var ips = [];
 
@@ -118,10 +125,12 @@ module.exports = {
                         'name': encodeURIComponent(runTime.settings.name),
                         'findingCode': runTime.settings.findingCode.code
                     },
-                    timeout: 3300,
+                    timeout: 3500,
                 }, (res) => {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
+                    _this.log('detectDevice:' + ip);
+                    _this.log('res.headers:', res.headers);
 
                     if (!res.headers.id) return;
                     ips.push(ip);
@@ -141,7 +150,7 @@ module.exports = {
                 });
             })(ip);
         }
-        if (typeof _ipSeg == 'undefined' && runTime.settings.otherIpSeg >= 0)
+        if (typeof _ipSeg == 'undefined' && runTime.settings.otherIpSeg != '')
             this.detectDevice(runTime.settings.otherIpSeg);
     },
     detectDevice5: function (_ipSeg) {
@@ -259,6 +268,28 @@ module.exports = {
     },
     md5(str) {
         return md5(str);
+    },
+
+    log(...logs) {
+        console.log(runTime.settings.log);
+        if (!runTime.settings.log) return;
+        logger.log(`[${new Date().toLocaleString()}]`, ...logs);
+    },
+
+
+    log1(str, obj) {
+        let path = utools.getPath('documents') + '/jflower.log';
+        fs.open(path, 'a', (err, fd) => {
+            if (err) {
+                console.log(err);
+                return false;
+            }
+            if (typeof obj == 'undefined') obj = '';
+            str = `[${new Date().toLocaleString()}]${str.toString()}${obj.toString()}\n`;
+            fs.write(fd, str, (err) => {
+                console.log(err);
+            });
+        });
     }
 
 }

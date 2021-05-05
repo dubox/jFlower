@@ -64,10 +64,11 @@ module.exports = {
     platform: '', //Utils.getPlatform(),
 
     _settings: {
+        log: false,
         sharePath: '',
         sharing: false,
         name: os.hostname,
-        otherIpSeg: -1,
+        otherIpSeg: '',
         canBeFound: true,
         findingCode: {
             isOnly: false, //仅拥有一样暗号的主机可以找到我

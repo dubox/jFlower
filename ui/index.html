@@ -228,7 +228,7 @@
             <Divider :class="'ld'" orientation="left">扫描其他网段的主机</Divider>
             <Row>
                 <i-col span="20">
-                    {{ipPrefix}} <i-input size="small" style="width: 50px;" :number="true" :max="255" :min="0" :step="1" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></i-input> .0~255
+                    <i-input size="small" style="width: 120px;" :placeHolder="ipPrefix" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></i-input> .0~255
                 </i-col>
                 <i-col span="4">
                     <i-button type="info" size="small" @click="app.detect(settings.otherIpSeg)">go</i-button>
@@ -276,6 +276,13 @@
                 </i-col>
                 <i-col span="4">
                     <i-button type="info" size="small" @click="app.detect()">ok</i-button>
+                </i-col>
+            </Row>
+            <Row>
+                <i-col span="24">
+                    日志:<i-switch v-model="settings.log" size="small"></i-switch>
+                </i-col>
+                <i-col span="24"><a v-on:click="app.showFile(utools.getPath('documents') + '/jflower.log')">{{utools.getPath('documents') + '/jflower.log'}}</a>
                 </i-col>
             </Row>
             

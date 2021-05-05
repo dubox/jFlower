@@ -31,7 +31,12 @@ utools.onPluginEnter(({
         Server.check(() => {
             console.log('server check ok');
             setTimeout(function () {
-                Utils.detectDevice();
+                try {
+                    Utils.detectDevice();
+                } catch (e) {
+                    Utils.log('e:', e);
+                }
+
                 window.app.ui.runTime.serverState = true;
                 window.app.ui.runTime.localIp = runTime.localIp;
                 window.app.ui.runTime.localPort = Server.port;
@@ -111,4 +116,5 @@ utools.onPluginReady(() => {
         }
     };
     require('./ui/index');
+    Utils.log("onPluginReady:runTime:", JSON.parse(JSON.stringify(runTime._settings)));
 });
