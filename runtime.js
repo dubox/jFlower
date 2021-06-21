@@ -123,6 +123,7 @@ module.exports = {
         console.log(res2);
 
     },
+
     set: function (key, value) {
         var key_arr = key.split('.');
         var that = this;
@@ -178,6 +179,10 @@ module.exports = {
             data: this.history
         });
         console.log(res);
+    },
+    delHistory: function (index) {
+        this.history.splice(index, 1);
+        this.updHistory();
     }
 }
 

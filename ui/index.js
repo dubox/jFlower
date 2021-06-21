@@ -67,6 +67,9 @@ app.ui = new Vue({
             else
                 this.toast('复制失败！', 'error');
         },
+        del: function (index) {
+            app.deleteHistory(index);
+        },
     },
     mounted() {
 

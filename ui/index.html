@@ -168,6 +168,10 @@
                                 @click.prevent="copy(item.content,item.contentType)">
                                 <Icon type="ios-copy-outline" size="20"></Icon>
                             </a>
+                            <a href="#" slot="extra"
+                                @click.prevent="del(index)">
+                                <Icon type="ios-trash-outline" size="20"></Icon>
+                            </a>
                             <p v-if="item.contentType=='text'">
                                 <span v-html="item.content"></span>
                             </p>

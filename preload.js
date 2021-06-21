@@ -2,6 +2,8 @@ global.runTime = require('./runtime');
 var Server = require('./server');
 var Utils = require('./utils');
 var Clients = require('./clients');
+//const { runTime } = require('./server');
+//const runtime = require('./runtime');
 
 
 //console.log(`本机ip：${Utils.getLocalIp()}`);
@@ -110,6 +112,9 @@ utools.onPluginReady(() => {
                 return utools.copyImage(content);
 
             return utools.copyText(content);
+        },
+        deleteHistory: function (index) {
+            runTime.delHistory(index);
         },
         init() {
 
