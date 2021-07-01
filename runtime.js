@@ -1,11 +1,14 @@
 //var Utils = require('./utils');
 const os = require('os');
+const fs = require('fs');
+const userData = require('./userdata');
 
 //global.runTime = 
 module.exports = {
     init: function () {
         this.localId = utools.getLocalId();
         this.settings; //加载设置
+        console.log(userData)
         this.loadHistory(); //加载历史记录
         // if(!this.settings.name)this.setting.name = os.hostname;
         // if(!this.settings.otherIpSeg){
@@ -42,7 +45,7 @@ module.exports = {
     },
     waitingFiles: { //合并到history？
         //等待请求的待发送文件
-        'tokenxxxxxxxxx': {
+        'token': {
             path: '',
             time: 0,
             ip: '',
@@ -149,36 +152,20 @@ module.exports = {
         time: ''
     }],
     loadHistory: function () {
-        var res = utools.db.get(this.localId + ':history');
-        console.log(res);
-        if (res) {
-            this.history = res.data;
-        } else {
-            this.history = [];
-        }
+        var res = userData.get('history', []);
+        console.log('load history:', res);
+        this.history = res;
     },
     addHistory: function (data) {
         console.log(data);
         this.history.push(data);
 
-        let res = utools.db.get(this.localId + ':history'); // console.log(this.localId, res); console.log(this);
-        rev = res ? res._rev : '';
-        res = utools.db.put({
-            _id: this.localId + ':history',
-            _rev: rev,
-            data: this.history
-        });
-        console.log(res);
+        let res = userData.put('history', this.history);
+        console.log('put history:', res);
     },
     updHistory: function () {
-        let res = utools.db.get(this.localId + ':history'); // console.log(this.localId, res); console.log(this);
-        rev = res ? res._rev : '';
-        res = utools.db.put({
-            _id: this.localId + ':history',
-            _rev: rev,
-            data: this.history
-        });
-        console.log(res);
+        let res = userData.put('history', this.history);
+        console.log('upd history:', res);
     },
     delHistory: function (index) {
         this.history.splice(index, 1);
