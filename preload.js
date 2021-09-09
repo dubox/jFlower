@@ -5,10 +5,11 @@ var Clients = require('./clients');
 //const { runTime } = require('./server');
 //const runtime = require('./runtime');
 
-
+const fs = require('fs');
+//const { runTime } = require('./clients');
 //console.log(`本机ip：${Utils.getLocalIp()}`);
 
-
+window.fs = fs;
 
 utools.onPluginEnter(({
     code,
@@ -80,6 +81,7 @@ utools.onPluginReady(() => {
         updSettings() {
             runTime.updSettings();
         },
+        
         showFile: function (path) {
             utools.shellShowItemInFolder(path);
         },
@@ -113,8 +115,22 @@ utools.onPluginReady(() => {
 
             return utools.copyText(content);
         },
-        deleteHistory: function (index) {
-            runTime.delHistory(index);
+        delHistory: function (index) {
+            return runTime.delHistory(index);
+        },
+        updHistory() {
+            runTime.updHistory();
+        },
+        fileSend:{
+            cancel(_id){
+                Clients.cancelFileSend(_id);
+            },
+            pause(_id){
+                Clients.pauseFileSend(_id);
+            },
+            resume(_id){
+                Clients.resumeFileSend(_id);
+            },
         },
         init() {
 

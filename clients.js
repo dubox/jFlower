@@ -1,10 +1,13 @@
 const http = require('http');
 const fs = require('fs');
 var Utils = require('./utils');
+//const { runTime } = require('./server');
 //var runTime = require('./runtime');
 
 module.exports = {
   runTime: runTime.client,
+
+  RSpool:{},//sendFile 的 rs对象池
 
   sendFile: function (ip, files, cb) {
     var _this = this;
@@ -22,6 +25,7 @@ module.exports = {
     runData.transferred = 0;
     runData.elapsed = 0;
     runData.startTime = (new Date()).getTime();
+    runData.status = 'sending';
     rs.on('data', function (chunk) {
       runData.transferred += chunk.length;
       runData.elapsed = new Date().getTime() - runData.startTime;
@@ -33,15 +37,17 @@ module.exports = {
     });
     rs.on('error', function (err) {
       console.log('err:', err);
+      runData.status = 'error';
       req.destroy(err);
     });
     req.on('finish', () => {
       console.log('finish2:', (new Date()).getTime());
+      runData.status = 'completed';
       runTime.updHistory();
     });
     rs.pipe(req);
 
-    runTime.addHistory({
+    let key = runTime.addHistory({
       ip: ip,
       id: '',
       type: 2, //1 from,2 to
@@ -49,6 +55,29 @@ module.exports = {
       contentType: 'file', //text file
       time: new Date().getTime()
     });
+    _this.RSpool[key] = rs;
+  },
+  cancelFileSend:function(key){
+    if(typeof this.RSpool[key] == "object"){
+      this.RSpool[key].unpipe();
+      this.RSpool[key].destroy(new Error('User canceled'));
+    }
+  },
+  pauseFileSend:function(key){
+    if(typeof this.RSpool[key] == "object"){
+      this.RSpool[key].pause();
+      let h = runTime.getHistory(key);
+      if(h)
+        h.content.status = 'paused';
+    }
+  },
+  resumeFileSend:function(key){
+    if(typeof this.RSpool[key] == "object"){
+      this.RSpool[key].resume();
+      let h = runTime.getHistory(key);
+      if(h)
+        h.content.status = 'sending';
+    }
   },
   sendText: function (ip, text, cb) {
     var req = this.sender('text', ip, new Buffer(text).length, cb)
@@ -207,8 +236,8 @@ module.exports = {
       // }
 
       Utils.toast('发送成功');
-      utools.outPlugin();
-      utools.hideMainWindow();
+      //utools.outPlugin();
+      //utools.hideMainWindow();
     }
   }
 };

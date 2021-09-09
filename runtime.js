@@ -2,6 +2,7 @@
 const os = require('os');
 const fs = require('fs');
 const userData = require('./userdata');
+const md5 = require('./libs/md5');
 
 //global.runTime = 
 module.exports = {
@@ -144,9 +145,10 @@ module.exports = {
         }
     },
     history: [{
+        _id:'',
         ip: '',
         id: '',
-        type: 1, //1 from,2 to
+        type: 1, //1 receive,2 send
         content: '',
         contentType: 'img', //text file
         time: ''
@@ -158,19 +160,34 @@ module.exports = {
     },
     addHistory: function (data) {
         console.log(data);
+        data._id = md5((new Date()).getTime()+Math.random());
         this.history.push(data);
 
         let res = userData.put('history', this.history);
         console.log('put history:', res);
+        return data._id;
     },
     updHistory: function () {
         let res = userData.put('history', this.history);
         console.log('upd history:', res);
     },
     delHistory: function (index) {
-        this.history.splice(index, 1);
+        let curr = this.history.splice(index, 1);console.log(curr)
         this.updHistory();
-    }
+        return curr[0];
+    },
+    getHistory: function (index) {
+        if(typeof index == 'number'){
+            return this.history[index];
+        }
+        //支持通过id获取
+        for (const key in this.history) {
+            if(typeof this.history[key]._id != 'undefined' && this.history[key]._id == index)
+            return this.history[key];
+        }
+        return null;
+    },
+    
 }
 
 //runTime.updSettings();

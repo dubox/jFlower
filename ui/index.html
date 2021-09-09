@@ -76,10 +76,10 @@
             width: 20px;
             height: 100%;
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             font-size: 20px;
             opacity: .6;
         }
@@ -105,6 +105,10 @@
         .ivu-card-head p {
             font: 16px bold;
             color: #464c5b;
+        }
+
+        .ivu-card-body{
+            position: relative;
         }
 
         .ivu-card-body p {
@@ -172,6 +176,10 @@
                                 @click.prevent="del(index)">
                                 <Icon type="ios-trash-outline" size="20"></Icon>
                             </a>
+                            <a v-if="item.contentType=='file' && item.content.transferred < item.content.total" href="#" slot="extra"
+                                @click.prevent="del(index)">
+                                <Icon type="ios-close-circle-outline" size="20" />
+                            </a>
                             <p v-if="item.contentType=='text'">
                                 <span v-html="item.content"></span>
                             </p>
@@ -197,7 +205,16 @@
                                     </span>
 
                                 </div>
+                               
                             </i-circle>
+                            <a href="#"  v-if="item.contentType=='file' && item.content.status=='sending'"
+                            @click.prevent="filePause(item)" style="position: absolute;top: 0px;left: 0;width: 100%;height: 332px;background-color: rgba(255, 255, 255, 0.7);">
+                            <Icon type="ios-pause" size="100" style="line-height: 332px;" />
+                        </a>
+                            <a href="#"  v-if="item.contentType=='file' && item.content.status=='paused'"
+                            @click.prevent="fileResume(item)" style="position: absolute;top: 0px;left: 0;width: 100%;height: 332px;background-color: rgba(255, 255, 255, 0.7);">
+                            <Icon type="ios-play" size="100" style="line-height: 332px;" />
+                        </a>
                         </Card>
                     </i-col>
                     <i-col :span="item.type==2?2:10"></i-col>
@@ -206,9 +223,10 @@
 
             </Scroll>
         </Layout>
-        <div id="pull-drawer" v-on:click="drawer=true">
-            <Icon type="md-arrow-dropright" />
-        </div>
+        <a href="#" id="pull-drawer" @click.prevent="drawer=true">
+            <!-- <Icon type="md-arrow-dropright"  size="30"/> -->
+            <Icon type="ios-cog-outline" size="35" />
+        </a>
 
         <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
             <Divider :class="'ld'" orientation="left">设置本机名称</Divider>
