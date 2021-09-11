@@ -13,6 +13,11 @@ app.ui = new Vue({
         },
         settings: app.settings,
         drawer: false,
+        modal:{
+            show :false,
+            cb :null,
+            msg :'',
+        }
     },
     computed: {
         // speedSend: function () {
@@ -74,19 +79,39 @@ app.ui = new Vue({
         },
         fileCancel(history){
             if(history.contentType != 'file')return;
-            if(history.type == 2)
-                app.fileSend.cancel(history._id);
             
+            app.fileSend.cancel(history);
+            if(history.type == 1){
+                this.alert('同时删除文件？',()=>{
+                    app.unlink(this.runTime.history[index].content.path)
+                },'删除','不删除');
+            }
         },
         filePause(history){
-            if(history.type == 2)
-            app.fileSend.pause(history._id);
+            app.fileSend.pause(history);
+            
             },
         fileResume(history){
-            if(history.type == 2)
-            app.fileSend.resume(history._id);
+            app.fileSend.resume(history);
             },
-        
+        modalOK(){
+            if(cb)
+                this.modal.cb();
+        },
+        alert(msg ,cb,okText,cancelText){
+            this.$Modal.confirm({
+                //title: '',
+                content: msg,
+                okText: okText?okText:'确定',
+                cancelText: cancelText?cancelText:'取消',
+                onOk:cb
+            });
+            return;
+
+            this.modal.show=true;
+            this.modal.msg=msg;
+            this.modal.cb=cb;
+        }
     },
     mounted() {
 

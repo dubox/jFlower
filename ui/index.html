@@ -222,6 +222,10 @@
 
 
             </Scroll>
+
+            <Modal v-model="modal.show" @on-ok="modalOK">
+                <p>{{modal.msg}}</p>
+            </Modal>
         </Layout>
         <a href="#" id="pull-drawer" @click.prevent="drawer=true">
             <!-- <Icon type="md-arrow-dropright"  size="30"/> -->

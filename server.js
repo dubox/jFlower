@@ -284,6 +284,7 @@ var server = {
 
 
     },
+    RSpool:{},//sendFile 的 rs对象池
     on_file: function (req, res) {
         var _this = this;
         var runData = {};
@@ -301,6 +302,7 @@ var server = {
             runData.transferred = 0;
             runData.elapsed = 0;
             runData.startTime = (new Date()).getTime();
+            runData.status = 'sending';
             req.on('data', (chunk) => {
                 runData.transferred += chunk.length;
                 runData.elapsed = new Date().getTime() - runData.startTime;
@@ -312,8 +314,15 @@ var server = {
                 //ws.end();
                 console.log('write:', runData.transferred);
             });
+            rs.on('error', function (err) {
+                console.log('err:', err);
+                runData.status = 'error';
+                runTime.updHistory();
+                ws.destroy(err);
+              });
             ws.on('finish', () => {
                 console.log('finish:', (new Date()).getTime());
+                runData.status = 'completed';
                 runTime.updHistory();
                 //utools.outPlugin();
                 utools.shellShowItemInFolder(target_file);
@@ -323,7 +332,7 @@ var server = {
             utools.showMainWindow();
             Utils.toast(`收到文件[${runData.name}]`);
 
-            runTime.addHistory({
+            let key = runTime.addHistory({
                 ip: 'req.ip', //req.ip,
                 id: '',
                 type: 1, //1 from,2 to
@@ -331,10 +340,32 @@ var server = {
                 contentType: 'file', //text file
                 time: new Date().getTime()
             });
+            _this.RSpool[key] = req;
         }
 
-
     },
+    cancelFileSend:function(key){
+        if(typeof this.RSpool[key] == "object"){
+          this.RSpool[key].unpipe();
+          this.RSpool[key].destroy(new Error('User canceled'));
+        }
+      },
+      pauseFileSend:function(key){
+        if(typeof this.RSpool[key] == "object"){
+          this.RSpool[key].pause();
+          let h = runTime.getHistory(key);
+          if(h)
+            h.content.status = 'paused';
+        }
+      },
+      resumeFileSend:function(key){
+        if(typeof this.RSpool[key] == "object"){
+          this.RSpool[key].resume();
+          let h = runTime.getHistory(key);
+          if(h)
+            h.content.status = 'sending';
+        }
+      },
     on_img: function (req, res) {
         console.log('img');
         req.setEncoding('utf8');

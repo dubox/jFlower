@@ -122,15 +122,27 @@ utools.onPluginReady(() => {
             runTime.updHistory();
         },
         fileSend:{
-            cancel(_id){
-                Clients.cancelFileSend(_id);
+            cancel(h){
+                if(h.type==2)
+                Clients.cancelFileSend(h._id);
+                if(h.type==1)
+                Server.cancelFileSend(h._id);
             },
-            pause(_id){
-                Clients.pauseFileSend(_id);
+            pause(h){
+                if(h.type==2)
+                Clients.pauseFileSend(h._id);
+                if(h.type==1)
+                Server.pauseFileSend(h._id);
             },
-            resume(_id){
-                Clients.resumeFileSend(_id);
+            resume(h){
+                if(h.type==2)
+                Clients.resumeFileSend(h._id);
+                if(h.type==1)
+                Server.resumeFileSend(h._id);
             },
+        },
+        unlink(path){
+            fs.unlinkSync(path);
         },
         init() {
 
