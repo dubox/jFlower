@@ -5,6 +5,7 @@ const url = require('url');
 const Utils = require('./utils');
 const mine = require('./mine').types;
 const mp4 = require('./libs/mp4');
+const { Transform ,pipeline} = require('stream');
 
 //var runTime = require('./runtime');
 
@@ -242,6 +243,7 @@ var server = {
 
         console.log('req.headers:', req.headers);
         if (req.headers.findingcode != runTime.settings.findingCode.code) return; //如果暗号不一样 则不要被动添加对方
+        
         Utils.addFeature(req.headers.ip, decodeURIComponent(req.headers.name));
         //Utils.toast(`${req.headers.name}(${req.headers.ip})发现了你`);
 
@@ -268,7 +270,8 @@ var server = {
             //let ip = _this.getClientIp(req);
             //console.log('ip', req.ip)
             runTime.addHistory({
-                ip: req.ip,
+                ip: req.headers.ip,
+                hostName:runTime.hosts[req.headers.ip].hostName,
                 id: '',
                 type: 1, //1 from,2 to
                 content: rawData,
@@ -303,64 +306,110 @@ var server = {
             runData.elapsed = 0;
             runData.startTime = (new Date()).getTime();
             runData.status = 'sending';
-            req.on('data', (chunk) => {
+            req.onDataListener = (chunk) => {
                 runData.transferred += chunk.length;
                 runData.elapsed = new Date().getTime() - runData.startTime;
                 //
-                //ws.write(chunk);
-            });
+                ws.write(chunk);
+            };
+            
             req.on('end', () => {
                 console.log('end:', (new Date()).getTime());
                 //ws.end();
                 console.log('write:', runData.transferred);
             });
-            rs.on('error', function (err) {
-                console.log('err:', err);
+            req.on('error', () => {
                 runData.status = 'error';
                 runTime.updHistory();
-                ws.destroy(err);
-              });
-            ws.on('finish', () => {
-                console.log('finish:', (new Date()).getTime());
-                runData.status = 'completed';
-                runTime.updHistory();
-                //utools.outPlugin();
-                utools.shellShowItemInFolder(target_file);
-                res.end();
+                ws.end();
             });
-            req.pipe(ws);
+            // ws.on('error', function (err) {
+            //     console.log('err:', err);
+            //     runData.status = 'error';
+            //     runTime.updHistory();
+            //     req.destroy(err);
+            //   });
+            // ws.on('finish', () => {
+            //     console.log('finish:', (new Date()).getTime());
+            //     runData.status = 'completed';
+            //     runTime.updHistory();
+            //     //utools.outPlugin();
+            //     utools.shellShowItemInFolder(target_file);
+            //     res.end();
+            // });
+            let transform = new Transform({
+                transform(chunk, encoding, callback) {
+                    runData.transferred += chunk.length;
+                    runData.elapsed = (new Date()).getTime() - runData.startTime;
+                    callback(null,chunk);
+                }
+              });
+             pipeline(
+                req,
+                transform,
+                ws,
+                (err) => {
+                  if (err) {
+                    console.log('err:', err);
+                    runData.status = 'error';
+                    runTime.updHistory();
+                    req.destroy(err);
+                  } else {
+                    console.log('finish:', (new Date()).getTime());
+                    runData.status = 'completed';
+                    runTime.updHistory();
+                    //utools.outPlugin();
+                    utools.shellShowItemInFolder(target_file);
+                    res.end();
+                  }
+                }
+              );
+           
+            //req.pipe(transform).pipe(ws);//
+            //req.on('data', req.onDataListener);
+            
+
             utools.showMainWindow();
             Utils.toast(`收到文件[${runData.name}]`);
 
             let key = runTime.addHistory({
-                ip: 'req.ip', //req.ip,
+                ip: req.headers.ip, //req.ip,
+                hostName:runTime.hosts[req.headers.ip]?runTime.hosts[req.headers.ip].hostName:'',
                 id: '',
                 type: 1, //1 from,2 to
                 content: runData,
                 contentType: 'file', //text file
                 time: new Date().getTime()
             });
-            _this.RSpool[key] = req;
+            _this.RSpool[key] = [req,transform];
         }
 
     },
     cancelFileSend:function(key){
-        if(typeof this.RSpool[key] == "object"){
-          this.RSpool[key].unpipe();
-          this.RSpool[key].destroy(new Error('User canceled'));
+        if(typeof this.RSpool[key][0] == "object"){
+          this.RSpool[key][0].unpipe();
+          this.RSpool[key][0].destroy(new Error('User canceled'));
         }
       },
-      pauseFileSend:function(key){
-        if(typeof this.RSpool[key] == "object"){
-          this.RSpool[key].pause();
+      pauseFileSend:function(key){console.log(key);console.log(this.RSpool[key])
+        if(typeof this.RSpool[key][0] == "object"){
+            this.RSpool[key][0].socket.pause();
+            //this.RSpool[key][1].pause();
+            this.RSpool[key][0].pause();
+            //this.RSpool[key][0].unpipe();
+            //this.RSpool[key].removeListener('data',this.RSpool[key].onDataListener);
           let h = runTime.getHistory(key);
           if(h)
             h.content.status = 'paused';
         }
       },
       resumeFileSend:function(key){
-        if(typeof this.RSpool[key] == "object"){
-          this.RSpool[key].resume();
+        if(typeof this.RSpool[key][0] == "object"){
+          //this.RSpool[key][0].pipe(this.RSpool[key][1]);
+          //this.RSpool[key].on('data', this.RSpool[key].onDataListener);
+          //this.RSpool[key][1].resume();
+          this.RSpool[key][0].resume();
+          this.RSpool[key][0].socket.resume();
           let h = runTime.getHistory(key);
           if(h)
             h.content.status = 'sending';
@@ -380,7 +429,8 @@ var server = {
             res.end();
             Utils.toast(`收到[图片]已复制到剪贴板`);
             runTime.addHistory({
-                ip: req.ip,
+                ip: req.headers.ip,
+                hostName:runTime.hosts[req.headers.ip].hostName,
                 id: '',
                 type: 1, //1 from,2 to
                 content: rawData,

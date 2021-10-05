@@ -90,7 +90,12 @@ module.exports = {
 
 
             ]
-        })
+        });
+        runTime.hosts[ip] = {
+            ip:ip,
+            hostName:name,
+            nativeId:id,
+        };
     },
 
     detectDevice: function (_ipSeg) {
@@ -108,8 +113,6 @@ module.exports = {
         }
         console.log(ipSeg);
         _this.log(ipSeg);
-
-        var ips = [];
 
         for (let i = 0; i < 256; i++) {
             var ip = ipSeg + '.' + i;
@@ -133,7 +136,6 @@ module.exports = {
                     _this.log('res.headers:', res.headers);
 
                     if (!res.headers.id) return;
-                    ips.push(ip);
                     _this.addFeature(ip, decodeURIComponent(res.headers.name), res.headers.id);
                     res.resume();
                     if (i == 255) // && typeof _ipSeg != 'undefined'
@@ -163,8 +165,6 @@ module.exports = {
 
         console.log(ipSeg);
 
-        var ips = [];
-
         for (let j = 0; j < 256; j++) {
             for (let i = 0; i < 256; i++) {
                 var ip = ipSeg + '.' + j + '.' + i;
@@ -183,7 +183,7 @@ module.exports = {
                         console.log(ip);
                         console.log('res:', res);
                         if (ip == localIp) return;
-                        ips.push(ip);
+                        
                         _this.addFeature(ip, res.headers.name, res.headers.id);
                         res.resume();
                     }).on('timeout', () => {

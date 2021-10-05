@@ -83,7 +83,7 @@ app.ui = new Vue({
             app.fileSend.cancel(history);
             if(history.type == 1){
                 this.alert('同时删除文件？',()=>{
-                    app.unlink(this.runTime.history[index].content.path)
+                    app.unlink(history.content.path)
                 },'删除','不删除');
             }
         },

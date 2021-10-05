@@ -66,6 +66,7 @@ module.exports = {
     localIp: '', //Utils.getLocalIp(),
     localId: '',
     platform: '', //Utils.getPlatform(),
+    hosts:{},   //记录连接到本机的主机
 
     _settings: {
         log: false,
@@ -124,7 +125,6 @@ module.exports = {
             _rev: rev,
             data: JSON.parse(JSON.stringify(this._settings))
         });
-        console.log(res2);
 
     },
 
@@ -147,6 +147,7 @@ module.exports = {
     history: [{
         _id:'',
         ip: '',
+        hostName:'',
         id: '',
         type: 1, //1 receive,2 send
         content: '',

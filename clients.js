@@ -3,6 +3,7 @@ const fs = require('fs');
 var Utils = require('./utils');
 //const { runTime } = require('./server');
 //var runTime = require('./runtime');
+const { Transform ,pipeline} = require('stream');
 
 module.exports = {
   runTime: runTime.client,
@@ -26,66 +27,103 @@ module.exports = {
     runData.elapsed = 0;
     runData.startTime = (new Date()).getTime();
     runData.status = 'sending';
-    rs.on('data', function (chunk) {
-      runData.transferred += chunk.length;
-      runData.elapsed = new Date().getTime() - runData.startTime;
-    });
-    rs.on('end', function () {
-      console.log('end2:', (new Date()).getTime());
-      req.end();
-      //_this.runTime.fileSend = {startTime:0};
-    });
-    rs.on('error', function (err) {
+    // rs.on('data', function (chunk) {
+    //   runData.transferred += chunk.length;
+    //   runData.elapsed = new Date().getTime() - runData.startTime;
+    //   //req.write(chunk);
+    // });
+    // rs.on('end', function () {
+    //   console.log('end2:', (new Date()).getTime());
+    //   req.end();
+    //   //_this.runTime.fileSend = {startTime:0};
+    // });
+    // rs.on('error', function (err) {
+    //   console.log('err:', err);
+    //   runData.status = 'error';
+    //   req.destroy(err);
+    // });
+    req.on('error', function (err) {
       console.log('err:', err);
       runData.status = 'error';
-      req.destroy(err);
+      rs.destroy(err);
     });
     req.on('finish', () => {
       console.log('finish2:', (new Date()).getTime());
       runData.status = 'completed';
       runTime.updHistory();
     });
-    rs.pipe(req);
+    //rs.pipe(req);
+    let transform = new Transform({
+      transform(chunk, encoding, callback) {
+          runData.transferred += chunk.length;
+          runData.elapsed = (new Date()).getTime() - runData.startTime;
+          callback(null,chunk);
+      }
+    });
+    pipeline(
+      rs,
+      transform,
+      req,
+      (err) => {
+        if (err) {
+          console.log('err:', err);
+          runData.status = 'error';
+          runTime.updHistory();
+          rs.destroy(err);
+        } else {
+          console.log('finish:', (new Date()).getTime());
+          runData.status = 'completed';
+          runTime.updHistory();
+          //utools.outPlugin();
+          utools.shellShowItemInFolder(target_file);
+          req.end();
+        }
+      }
+    );
 
     let key = runTime.addHistory({
       ip: ip,
+      hostName: runTime.hosts[ip].hostName,
       id: '',
       type: 2, //1 from,2 to
       content: runData,
       contentType: 'file', //text file
       time: new Date().getTime()
     });
-    _this.RSpool[key] = rs;
+    _this.RSpool[key] = [rs,transform];
   },
   cancelFileSend:function(key){
-    if(typeof this.RSpool[key] == "object"){
-      this.RSpool[key].unpipe();
-      this.RSpool[key].destroy(new Error('User canceled'));
+    if(typeof this.RSpool[key][0] == "object"){
+      this.RSpool[key][0].unpipe();
+      this.RSpool[key][0].destroy(new Error('User canceled'));
     }
   },
   pauseFileSend:function(key){
-    if(typeof this.RSpool[key] == "object"){
-      this.RSpool[key].pause();
+    if(typeof this.RSpool[key][0] == "object"){
+      this.RSpool[key][1].pause();
+      this.RSpool[key][0].pause();
       let h = runTime.getHistory(key);
       if(h)
         h.content.status = 'paused';
     }
   },
   resumeFileSend:function(key){
-    if(typeof this.RSpool[key] == "object"){
-      this.RSpool[key].resume();
+    if(typeof this.RSpool[key][0] == "object"){
+      this.RSpool[key][0].resume();
+      this.RSpool[key][1].resume();
       let h = runTime.getHistory(key);
       if(h)
         h.content.status = 'sending';
     }
   },
   sendText: function (ip, text, cb) {
-    var req = this.sender('text', ip, new Buffer(text).length, cb)
+    var req = this.sender('text', ip, new Buffer(text).length, cb);console.log('444')
     req.write(text, 'utf8', () => {
       req.end();
     }); //
     runTime.addHistory({
       ip: ip,
+      hostName: runTime.hosts[ip].hostName,
       id: '',
       type: 2, //1 from,2 to
       content: text,
@@ -119,6 +157,7 @@ module.exports = {
 
     runTime.addHistory({
       ip: ip,
+      hostName: runTime.hosts[ip].hostName,
       id: '',
       type: 2, //1 from,2 to
       content: runData,
@@ -134,6 +173,7 @@ module.exports = {
     }); //
     runTime.addHistory({
       ip: ip,
+      hostName: runTime.hosts[ip].hostName,
       id: '',
       type: 2, //1 from,2 to
       content: img,
@@ -142,7 +182,7 @@ module.exports = {
     });
   },
   sender: function (type, ip, data_size, cb, headers) {
-
+    
     const options = {
       hostname: ip,
       port: runTime.settings.targetPort,
@@ -153,9 +193,9 @@ module.exports = {
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
         'cmd': type,
-        'ip': Utils.getLocalIp(),
+        'ip': Utils.getLocalIp(), //注意自定义header的值有符号要求
         'id': runTime.localId,
-        'findingCode': runTime.settings.findingCode.code
+        'findingCode': runTime.settings.findingCode.code,//server接收到的是小写key：findingcode
       },
       timeout: 2000
     };
@@ -189,7 +229,6 @@ module.exports = {
     req.on('end', (e) => {
       console.log(`req end`);
     });
-
     this.runTime.targetIp = ip;
 
     return req;
