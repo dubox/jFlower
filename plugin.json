@@ -4,7 +4,7 @@
 	"author": "dubox",
 	"homepage": "https://github.com/dubox/jFlower",
 	"main": "ui/index.html",
-	"version": "1.3.2",
+	"version": "1.4.0",
 	"logo": "ui/img/logo.png",
 	"features": [{
 			"code": "main",
