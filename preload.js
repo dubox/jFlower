@@ -10,9 +10,13 @@ const fs = require('fs');
 //console.log(`本机ip：${Utils.getLocalIp()}`);
 
 window.fs = fs;
-
+var initTime = 0;//(new Date()).getTime();
 
 function init(){
+
+    if(Math.abs((new Date()).getTime() - initTime) < 5000)return;
+    initTime = (new Date()).getTime();
+
     window.app.ui.runTime.serverState = false;
     Server.check(() => {
         console.log('server check ok');
