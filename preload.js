@@ -11,6 +11,27 @@ const fs = require('fs');
 
 window.fs = fs;
 
+
+function init(){
+    window.app.ui.runTime.serverState = false;
+    Server.check(() => {
+        console.log('server check ok');
+        Utils.log('server check ok');
+        setTimeout(function () {
+            try {
+                Utils.detectDevice();
+            } catch (e) {
+                Utils.log('e:', e);
+            }
+
+            window.app.ui.runTime.serverState = true;
+            window.app.ui.runTime.localIp = runTime.localIp;
+            window.app.ui.runTime.localPort = Server.port;
+        }, 0);
+
+    });
+}
+
 utools.onPluginEnter(({
     code,
     type,
@@ -18,6 +39,7 @@ utools.onPluginEnter(({
     optional
 }) => {
     console.log('用户进入插件', code, type, payload);
+    Utils.log('用户进入插件', code, type, payload);
 
     if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)) {
 
@@ -30,22 +52,7 @@ utools.onPluginEnter(({
         }
 
     } else {
-        window.app.ui.runTime.serverState = false;
-        Server.check(() => {
-            console.log('server check ok');
-            setTimeout(function () {
-                try {
-                    Utils.detectDevice();
-                } catch (e) {
-                    Utils.log('e:', e);
-                }
-
-                window.app.ui.runTime.serverState = true;
-                window.app.ui.runTime.localIp = runTime.localIp;
-                window.app.ui.runTime.localPort = Server.port;
-            }, 0);
-
-        });
+       init();
     }
     //滚动到列表底部
     setTimeout(() => {
@@ -148,6 +155,9 @@ utools.onPluginReady(() => {
 
         }
     };
+    
     require('./ui/index');
+    init();
     Utils.log("onPluginReady:runTime:", JSON.parse(JSON.stringify(runTime._settings)));
+    
 });

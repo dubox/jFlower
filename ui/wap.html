@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>jFlower</title>
+    <script type="text/javascript" src="iview/vue.min.js"></script>
+    <link rel="stylesheet" href="iview/iview.css">
+    <script type="text/javascript" src="iview/iview.min.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="ui" v-cloak>
+        <Layout class="layout" style="position: absolute;left: 0;top: 0;width: 100%; opacity: 0.5;">
+            <Row type="flex" align="middle">
+
+                <i-col span="8" class="col" align="middle">
+                    <Card :bordered="false" style="width:520px;margin: 50px auto;">
+                        <div style="text-align:center">
+                            <img src="img/logo.png" width="60%">
+                            <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp + ':' +runTime.localPort}}</h2>
+                                <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h2>
+                        </div>
+                    </Card>
+                </i-col>
+
+            </Row>
+        </Layout>
+        <Layout class="layout" id="history" style="width: 100%; height: 100%;">
+            <Scroll :height="document.documentElement.clientHeight" style="width: 100%;">
+
+                <Row v-for="(item ,index) in _history" :key="index" :s="index" type="flex" align="middle">
+                    <i-col :span="item.type==2?10:2"></i-col>
+                    <i-col span="12" class="col" align="middle">
+                        <i-time :time="item.time" :interval="10" style="color: #9ea7b4;font-size: 12px;"></i-time>
+                        <Card>
+                            <p slot="title" align="left">
+
+                                <Icon v-if="item.type==2" type="ios-paper-plane-outline" size="20"></Icon>
+                                {{item.hostName}}({{item.ip}})
+                                <Icon v-if="item.type==1" type="ios-paper-plane-outline" size="20"
+                                    style="transform: rotate(80deg);"></Icon>
+                            </p>
+                            <a v-if="item.contentType=='file'" href="#" slot="extra"
+                                @click.prevent="copy(item.content.path,item.contentType)">
+                                <Icon type="ios-copy-outline" size="20"></Icon>
+                            </a>
+                            <a v-if="item.contentType!='file'" href="#" slot="extra"
+                                @click.prevent="copy(item.content,item.contentType)">
+                                <Icon type="ios-copy-outline" size="20"></Icon>
+                            </a>
+                            <a href="#" slot="extra"
+                                @click.prevent="del(index)">
+                                <Icon type="ios-trash-outline" size="20"></Icon>
+                            </a>
+                            <a v-if="item.contentType=='file' && item.content.transferred < item.content.total" href="#" slot="extra"
+                                @click.prevent="del(index)">
+                                <Icon type="ios-close-circle-outline" size="20" />
+                            </a>
+                            <p v-if="item.contentType=='text'">
+                                <span v-html="item.content"></span>
+                            </p>
+                            <p v-if="item.contentType=='img'">
+                                <img :src="item.content" width="100%" />
+                            </p>
+                            <i-circle v-if="item.contentType=='file'" :size="300" :trail-width="4" :stroke-width="5"
+                                :percent="Math.round((item.content.transferred/item.content.total)*100)"
+                                stroke-color="#2db7f5">
+                                <div class="file-info">
+                                    <h1 v-on:click="showFile(item.content.path)"
+                                        style="color: #2db7f5;cursor: pointer;">{{item.content.name}}</h1>
+
+                                    <span class="speed">
+
+                                        {{Math.round((item.content.transferred / 1000 / 1000) / (item.content.elapsed / 1000) * 100) / 100}}
+                                        M/s
+                                    </span>
+                                    <span class="total">
+
+                                        {{(item.content.transferred/1000/1000).toFixed(3)}} /
+                                        <i>{{(item.content.total/1000/1000).toFixed(3)}} M</i>
+                                    </span>
+
+                                </div>
+                               
+                            </i-circle>
+                            <a class="op" href="#"  v-if="item.contentType=='file' && item.content.status=='sending'"
+                            @click.prevent="filePause(item)" style="position: absolute;top: 0px;left: 0;width: 100%;height: 332px;background-color: rgba(255, 255, 255, 0.7);">
+                            <Icon type="ios-pause" size="100" style="line-height: 332px;" />
+                        </a>
+                            <a class="op" href="#"  v-if="item.contentType=='file' && item.content.status=='paused'"
+                            @click.prevent="fileResume(item)" style="position: absolute;top: 0px;left: 0;width: 100%;height: 332px;background-color: rgba(255, 255, 255, 0.7);">
+                            <Icon type="ios-play" size="100" style="line-height: 332px;" />
+                        </a>
+                        </Card>
+                    </i-col>
+                    <i-col :span="item.type==2?2:10"></i-col>
+                </Row>
+
+
+            </Scroll>
+
+            <Modal v-model="modal.show" @on-ok="modalOK">
+                <p>{{modal.msg}}</p>
+            </Modal>
+        </Layout>
+        <a href="#" id="pull-drawer" @click.prevent="drawer=true">
+            <!-- <Icon type="md-arrow-dropright"  size="30"/> -->
+            <Icon type="ios-cog-outline" size="35" />
+        </a>
+
+        <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
+            <Divider :class="'ld'" orientation="left">设置本机名称</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-input  size="small" :value="settings.name" @on-blur="if($event.target.composing)return;settings.name =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
+                </i-col>
+            </Row>
+            <Divider :class="'ld'" orientation="left">设置本机IP</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-input  size="small" :value="settings.localIp" @on-blur="if($event.target.composing)return;settings.localIp =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
+                </i-col>
+            </Row>
+            <Divider :class="'ld'" orientation="left">扫描其他网段的主机</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-input size="small" style="width: 120px;" :placeHolder="ipPrefix" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></i-input> .0~255
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" @click="app.detect(settings.otherIpSeg)">go</i-button>
+                </i-col>
+            </Row>
+            <Divider :class="'ld'" orientation="left">目录分享</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
+                </i-col>
+                <i-col span="4">
+                    <i-switch v-model="settings.sharing" size="small"></i-switch>
+                </i-col>
+                <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
+                </i-col>
+            </Row>
+            <Divider :class="'ld'" orientation="left">暗号</Divider>
+            <Row>
+                <i-col span="20">
+                    <i-input  size="small" :value="settings.findingCode.code" @on-blur="if($event.target.composing)return;settings.findingCode.code =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" >ok</i-button>
+                </i-col>
+                <i-col span="24">
+                    仅相同暗号的主机可以找到我:<i-switch v-model="settings.findingCode.isOnly" size="small"></i-switch>
+                </i-col>
+            </Row>
+            <Divider :class="'ld'" orientation="left">高级设置</Divider>
+            <Row :title="'若不清楚此项的含义，则保持默认'" :class="'bottom-line'">
+
+                <i-col span="10">设置本机端口:</i-col>
+                <i-col span="14">
+                    <i-input  size="small"  :number="true" :max="65535" :min="0" :step="1" :value="settings.localPort" @on-blur="if($event.target.composing)return;settings.localPort =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="24" :class="'info'">
+                    点击右上角logo > 完全退出，重新进入方可生效
+                </i-col>
+            </Row>
+            <Row :title="'建议与本机端口保持一致'" :class="'bottom-line'">
+
+                <i-col span="10">设置扫描端口:</i-col>
+                <i-col span="10">
+                    <i-input  size="small"  :number="true" :max="65535" :min="0" :step="1" :value="settings.targetPort" @on-blur="if($event.target.composing)return;settings.targetPort =$event.target.value;"></i-input>
+                </i-col>
+                <i-col span="4">
+                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
+                </i-col>
+            </Row>
+            <Row>
+                <i-col span="24">
+                    日志:<i-switch v-model="settings.log" size="small"></i-switch>
+                </i-col>
+                <i-col span="24"><a v-on:click="app.showFile(utools.getPath('documents') + '/jflower.log')">{{utools.getPath('documents') + '/jflower.log'}}</a>
+                </i-col>
+            </Row>
+            
+        </Drawer>
+    </div>
+
+</body>
+
+</html>

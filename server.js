@@ -87,6 +87,8 @@ var server = {
                 this[cmd](req, res);
             else if (req.url.indexOf('/share') === 0)
                 this['on_share'](req, res);
+            else if (req.url.indexOf('/wap') === 0)
+                this['on_wap'](req, res);
             else {
                 res.writeHead(200, {
                     'Content-Type': 'text/plain' + ';charset=utf-8'
@@ -230,6 +232,97 @@ var server = {
 
             }
         });
+    },
+    on_wap: function(req, res){
+
+        var pathname = 'aaa';
+var realPath = './ui/wap.html';
+fs.exists(realPath, function (exists) {
+    if (!exists) {
+        res.writeHead(404, {
+            'Content-Type': 'text/plain' + ';charset=utf-8'
+        });
+
+        res.write("This request URL " + pathname + " was not found on this server.[jFlower]");
+        res.end();
+    } else {
+
+        //判断文件 或 目录
+        fs.stat(realPath, function (err, stats) {
+
+            if (stats.isFile()) { //文件
+
+
+                let ext = path.extname(realPath);
+                ext = ext ? ext.slice(1) : 'unknown';
+                var contentType = mine[ext] || "application/octet-stream";
+                console.log(contentType);
+                if (/(audio|video)/.test(contentType)) {
+                    //断点续传，获取分段的位置
+                    var range = req.headers.range;
+                    if (range) {
+                        //替换、切分，请求范围格式为：Content-Range: bytes 0-2000/4932
+                        var positions = range.replace(/bytes=/, "").split("-");
+                        //获取客户端请求文件的开始位置
+                        var start = parseInt(positions[0]);
+                        //获得文件大小
+                        var total = stats.size;
+                        //获取客户端请求文件的结束位置
+                        var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+                        //获取需要读取的文件大小
+                        var chunksize = (end - start) + 1;
+                        res.writeHead(206, {
+                            "Content-Range": "bytes " + start + "-" + end + "/" + total,
+                            "Accept-Ranges": "bytes",
+                            "Content-Length": chunksize,
+                            "Content-Type": contentType
+                        });
+                    } else
+                        res.writeHead(200, {
+                            "Accept-Ranges": "bytes",
+                            "Content-Length": stats.size,
+                            "Content-Type": contentType
+                        });
+
+                } else {
+                    res.writeHead(200, {
+                        'Content-Type': contentType
+                    });
+                }
+                var rs = fs.createReadStream(realPath, {
+                    start: start,
+                    end: end
+                });
+
+                rs.on('ready', function () {
+                    rs.pipe(res);
+                });
+                rs.on('end', function () {
+                    res.end();
+                });
+                rs.on('error', function (err) {
+                    res.writeHead(500, {
+                        'Content-Type': 'text/plain' + ';charset=utf-8'
+                    });
+                    res.end(err);
+                });
+
+
+
+
+            } else if (stats.isDirectory()) {
+
+                res.writeHead(403, {
+                    'Content-Type': 'text/plain' + ';charset=utf-8'
+                });
+                res.end();
+            }
+
+        });
+
+
+    }
+});
     },
     on_detect: function (req, res) {
         if (!runTime.settings.canBeFound) {
