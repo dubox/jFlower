@@ -8,6 +8,9 @@ var Clients = require('./clients');
 const fs = require('fs');
 //const { runTime } = require('./clients');
 //console.log(`本机ip：${Utils.getLocalIp()}`);
+const { versions } = require('process');
+console.log(versions);
+
 
 window.fs = fs;
 var initTime = 0;//(new Date()).getTime();
@@ -48,7 +51,7 @@ utools.onPluginEnter(({
     if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)) {
 
         if (type == 'files') {
-            Clients.sendFile(code, payload, Clients.sentCallback);
+            Clients.sendFileAsk(code, payload, Clients.sentCallback);
         } else if (type == 'img') {
             Clients.sendImg(code, payload, Clients.sentCallback);
         } else {

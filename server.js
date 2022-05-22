@@ -9,6 +9,10 @@ const { Transform ,pipeline} = require('stream');
 
 //var runTime = require('./runtime');
 
+class MyIncome extends http.IncomingMessage{
+
+}
+
 var server = {
 
     instance: null,
@@ -49,7 +53,9 @@ var server = {
     create: function (cb) {
 
         var _this = this;
-        this.instance = http.createServer((req, res) => {
+        this.instance = http.createServer({
+            IncomingMessage: MyIncome//http.IncomingMessage
+        },(req, res) => {
             console.log(req.headers);
             //限制客户端请求host为127.0.0.1或本机ip，预防dns rebind攻击
             //if (req.headers.host !== '127.0.0.1:' + _this.port && req.headers.host !== runTime.localIp + ':' + _this.port) {
@@ -109,7 +115,7 @@ var server = {
 
     },
     on_share: function (req, res) {
-        //限制目录请求范围
+        //检查分享开关
         if (!runTime.settings.sharing) {
             res.writeHead(404, {
                 'Content-Type': 'text/plain' + ';charset=utf-8'
@@ -131,18 +137,18 @@ var server = {
             res.end();
             return;
         }
-        fs.exists(realPath, function (exists) {
-            if (!exists) {
-                res.writeHead(404, {
-                    'Content-Type': 'text/plain' + ';charset=utf-8'
-                });
-
-                res.write("This request URL " + pathname + " was not found on this server.[jFlower]");
-                res.end();
-            } else {
-
                 //判断文件 或 目录
                 fs.stat(realPath, function (err, stats) {
+
+                    if(err){
+                        res.writeHead(404, {
+                            'Content-Type': 'text/plain' + ';charset=utf-8'
+                        });
+        
+                        res.write("This request URL " + pathname + " was not found on this server.[jFlower]");
+                        res.end();
+                        return;
+                    }
 
                     if (stats.isFile()) { //文件
 
@@ -183,10 +189,16 @@ var server = {
                                 'Content-Type': contentType
                             });
                         }
-                        var rs = fs.createReadStream(realPath, {
+                        var rs = fs.createReadStream(realPath, start?{
                             start: start,
-                            end: end
+                            end: end,
+                            //highWaterMark: 2560 * 1024
+                        }:{
+                           // highWaterMark: 1280 * 1024
                         });
+                        // rs.on('data', function (chunk) {
+                        //     res.write(chunk);
+                        //     });
 
                         rs.on('ready', function () {
                             rs.pipe(res);
@@ -228,9 +240,53 @@ var server = {
                     }
 
                 });
+            
+    },
+    on_getFile:function(req, res){
 
-
+        fs.stat(realPath, function (err, stats) {
+            if(err){
+                res.writeHead(404, {
+                    'Content-Type': 'text/plain' + ';charset=utf-8'
+                });
+                res.end();
+                return;
             }
+            //替换、切分，请求范围格式为：Content-Range: bytes 0-2000/4932
+            var positions = req.headers.range.replace(/bytes=/, "").split("-");
+            //获取客户端请求文件的开始位置
+            var start = parseInt(positions[0]);
+            //获得文件大小
+            var total = stats.size;
+            //获取客户端请求文件的结束位置
+            var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+            //获取需要读取的文件大小
+            var chunksize = (end - start) + 1;
+            res.writeHead(206, {
+                "Content-Range": "bytes " + start + "-" + end + "/" + total,
+                "Accept-Ranges": "bytes",
+                "Content-Length": chunksize,
+                "Content-Type": "application/octet-stream"
+            });
+
+            var rs = fs.createReadStream(realPath, {
+                start: start,
+                end: end,
+                //highWaterMark: 2560 * 1024
+            });
+
+            rs.on('ready', function () {
+                rs.pipe(res);
+            });
+            rs.on('end', function () {
+                res.end();
+            });
+            rs.on('error', function (err) {
+                res.writeHead(500, {
+                    'Content-Type': 'text/plain' + ';charset=utf-8'
+                });
+                res.end(err);
+            });
         });
     },
     on_wap: function(req, res){
@@ -329,14 +385,20 @@ fs.exists(realPath, function (exists) {
             res.end();
             return;
         }
+        
+        
+        if (req.headers.ip == runTime.localIp) {res.end();return;}
+
+        console.log('req.headers:', req.headers);
+        
+        if (runTime.settings.findingCode.isOnly && req.headers.findingcode != runTime.settings.findingCode.code) { 
+            //如果暗号不一样 则不要被动添加对方
+                res.end();return;
+        }
         res.setHeader('id', runTime.localId);
         res.setHeader('name', encodeURIComponent(runTime.settings.name));
         res.end();
-        if (req.headers.ip == runTime.localIp) return;
 
-        console.log('req.headers:', req.headers);
-        if (req.headers.findingcode != runTime.settings.findingCode.code) return; //如果暗号不一样 则不要被动添加对方
-        
         Utils.addFeature(req.headers.ip, decodeURIComponent(req.headers.name));
         //Utils.toast(`${req.headers.name}(${req.headers.ip})发现了你`);
 
@@ -375,10 +437,26 @@ fs.exists(realPath, function (exists) {
 
     },
     on_fileAsk: function (req, res) {
-
+        var runData = {};
+        runData.name = decodeURI(req.headers.file_name);
+        runData.path = utools.getPath('downloads') + path.sep + runData.name;
+        runData.total = parseInt(req.headers['content-length']);
+        runData.transferred = 0;
+            runData.elapsed = 0;
+            runData.startTime = (new Date()).getTime();
+            runData.status = 'paused';
+            runData.key = req.headers.key;
+        runTime.addHistory({
+            ip: req.headers.ip,
+            hostName:runTime.hosts[req.headers.ip].hostName,
+            id: '',
+            type: 1, 
+            content: rawData,
+            contentType: 'file', //text file
+            time: new Date().getTime()
+        });
         req.resume();
-
-
+        res.end();
     },
     RSpool:{},//sendFile 的 rs对象池
     on_file: function (req, res) {
@@ -393,7 +471,8 @@ fs.exists(realPath, function (exists) {
             res.end();
         } else {
             var ws = fs.createWriteStream(target_file, {
-                flags: 'w'
+                flags: 'w',
+                //highWaterMark: 5120*1024
             });
             runData.transferred = 0;
             runData.elapsed = 0;
@@ -401,35 +480,38 @@ fs.exists(realPath, function (exists) {
             runData.status = 'sending';
             req.onDataListener = (chunk) => {
                 runData.transferred += chunk.length;
-                runData.elapsed = new Date().getTime() - runData.startTime;
+                runData.elapsed = (new Date().getTime()) - runData.startTime;
                 //
                 ws.write(chunk);
             };
             
             req.on('end', () => {
-                console.log('end:', (new Date()).getTime());
-                //ws.end();
-                console.log('write:', runData.transferred);
+                // console.log('finish:', (new Date()).getTime());
+                //     runData.status = 'completed';
+                //     runTime.updHistory();
+                //     //utools.outPlugin();
+                //     utools.shellShowItemInFolder(target_file);
+                    //res.end();
             });
             req.on('error', () => {
                 runData.status = 'error';
                 runTime.updHistory();
                 ws.end();
             });
-            // ws.on('error', function (err) {
-            //     console.log('err:', err);
-            //     runData.status = 'error';
-            //     runTime.updHistory();
-            //     req.destroy(err);
-            //   });
-            // ws.on('finish', () => {
-            //     console.log('finish:', (new Date()).getTime());
-            //     runData.status = 'completed';
-            //     runTime.updHistory();
-            //     //utools.outPlugin();
-            //     utools.shellShowItemInFolder(target_file);
-            //     res.end();
-            // });
+            ws.on('error', function (err) {
+                console.log('err:', err);
+                runData.status = 'error';
+                runTime.updHistory();
+                req.destroy(err);
+              });
+            ws.on('finish', () => {
+                console.log('finish:', (new Date()).getTime());
+                runData.status = 'completed';
+                runTime.updHistory();
+                //utools.outPlugin();
+                utools.shellShowItemInFolder(target_file);
+                res.end();
+            });
             let transform = new Transform({
                 transform(chunk, encoding, callback) {
                     runData.transferred += chunk.length;
@@ -437,29 +519,30 @@ fs.exists(realPath, function (exists) {
                     callback(null,chunk);
                 }
               });
-             pipeline(
-                req,
-                transform,
-                ws,
-                (err) => {
-                  if (err) {
-                    console.log('err:', err);
-                    runData.status = 'error';
-                    runTime.updHistory();
-                    req.destroy(err);
-                  } else {
-                    console.log('finish:', (new Date()).getTime());
-                    runData.status = 'completed';
-                    runTime.updHistory();
-                    //utools.outPlugin();
-                    utools.shellShowItemInFolder(target_file);
-                    res.end();
-                  }
-                }
-              );
+            
+            //   pipeline(
+            //     req,
+            //     transform,
+            //     ws,
+            //     (err) => {
+            //       if (err) {
+            //         console.log('err:', err);
+            //         runData.status = 'error';
+            //         runTime.updHistory();
+            //         req.destroy(err);
+            //       } else {
+            //         console.log('finish:', (new Date()).getTime());
+            //         runData.status = 'completed';
+            //         runTime.updHistory();
+            //         //utools.outPlugin();
+            //         utools.shellShowItemInFolder(target_file);
+            //         res.end();
+            //       }
+            //     }
+            //   );
            
             //req.pipe(transform).pipe(ws);//
-            //req.on('data', req.onDataListener);
+            req.on('data', req.onDataListener);
             
 
             utools.showMainWindow();

@@ -22,7 +22,7 @@ module.exports = {
     var req = this.sender('file', ip, size, cb, {
       file_name: encodeURI(runData.name = file.name)
     });
-    var rs = fs.createReadStream(file.path);
+    var rs = fs.createReadStream(file.path,{highWaterMark: 5120*1024});
     runData.transferred = 0;
     runData.elapsed = 0;
     runData.startTime = (new Date()).getTime();
@@ -85,7 +85,7 @@ module.exports = {
       ip: ip,
       hostName: runTime.hosts[ip].hostName,
       id: '',
-      type: 2, //1 from,2 to
+      type: 2, //1 接收方,2 发送方
       content: runData,
       contentType: 'file', //text file
       time: new Date().getTime()
@@ -116,21 +116,26 @@ module.exports = {
         h.content.status = 'sending';
     }
   },
-  sendText: function (ip, text, cb) {
-    var req = this.sender('text', ip, new Buffer(text).length, cb);console.log('444')
-    req.write(text, 'utf8', () => {
-      req.end();
-    }); //
-    runTime.addHistory({
-      ip: ip,
-      hostName: runTime.hosts[ip].hostName,
-      id: '',
-      type: 2, //1 from,2 to
-      content: text,
-      contentType: 'text', //text file
-      time: new Date().getTime()
+
+  acceptFile:function(key){
+    let h = runTime.getHistory(key);
+    let runData = h.content;
+
+    var ws = fs.createWriteStream(target_file, {
+      flags: 'w',
+  });
+    var req = this.sender('getFile', ip, fs.statSync(file.path).size, (chunk)=>{
+      runData.transferred += chunk.length;
+      runData.elapsed = (new Date().getTime()) - runData.startTime;
+      ws.write(chunk);
+    },{
+      file_name: encodeURI(runData.name),
+      key:runData.key,
+      "Content-Range": `bytes ${runData.transferred}-`
     });
+    
   },
+  
   /**
    * 这里只发送文件发送的询问，对方同意后会主动请求server端下载文件
    * @param {*} ip 
@@ -144,26 +149,30 @@ module.exports = {
     let size = runData.total = fs.statSync(file.path).size;
     console.log('size:', size);
     runData.path = file.path;
-    runData.token = Utils.md5(file.name + (new Date()).getTime());
-    //文件名使用url转码，否则中文在header中会有问题
-    var req = this.sender('fileAsk', ip, size, cb, {
-      file_name: encodeURI(runData.name = file.name),
-      token: runData.token
-    });
-
-    req.end();
+    //runData.token = Utils.md5(file.name + (new Date()).getTime());
+   
     runData.transferred = 0;
     runData.elapsed = 0;
+    runData.startTime = (new Date()).getTime();
+    runData.status = 'paused';
+    runData.name = file.name;
 
-    runTime.addHistory({
+    var key = runTime.addHistory({
       ip: ip,
       hostName: runTime.hosts[ip].hostName,
       id: '',
-      type: 2, //1 from,2 to
+      type: 2, //1 接收方,2 发送方
       content: runData,
-      contentType: 'fileAsk', //text file
+      contentType: 'file', //text file
       time: new Date().getTime()
     });
+     //文件名使用url转码，否则中文在header中会有问题
+    var req = this.sender('fileAsk', ip, size, cb, {
+      file_name: encodeURI(file.name),
+      key: key
+    });
+
+    req.end();
   },
   sendImg: function (ip, img, cb) {
 
@@ -178,6 +187,22 @@ module.exports = {
       type: 2, //1 from,2 to
       content: img,
       contentType: 'img', //text file
+      time: new Date().getTime()
+    });
+  },
+
+  sendText: function (ip, text, cb) {
+    var req = this.sender('text', ip, new Buffer(text).length, cb);console.log('444')
+    req.write(text, 'utf8', () => {
+      req.end();
+    }); //
+    runTime.addHistory({
+      ip: ip,
+      hostName: runTime.hosts[ip].hostName,
+      id: '',
+      type: 2, //1 from,2 to
+      content: text,
+      contentType: 'text', //text file
       time: new Date().getTime()
     });
   },
@@ -212,6 +237,7 @@ module.exports = {
       res.setEncoding('utf8');
       res.on('data', (chunk) => {
         console.log(`响应主体: ${chunk}`);
+        if(cb)cb(1,chunk);
       });
       res.on('end', () => {
         console.log('res end');
@@ -219,6 +245,8 @@ module.exports = {
           cb(0);
         else
           cb(new Error(res.statusCode), ip);
+
+          req.end();
       });
     });
 
@@ -248,12 +276,12 @@ module.exports = {
     runTime.addHistory();
   },
   sentCallback: function (err, data) {
-    console.log('cb');
-    if (err) {
+    console.log('sender cb');
+    if (err instanceof Error) {
       console.log(err);
       utools.removeFeature(data);
       Utils.toast(`${err.message}`);
-    } else {
+    } else if(err === 0){
 
       // var content = runTime.client.content;
       // if (runTime.client.type != 'file' && runTime.client.type != 'fileAsk') {
