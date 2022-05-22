@@ -6,6 +6,7 @@ const Utils = require('./utils');
 const mine = require('./mine').types;
 const mp4 = require('./libs/mp4');
 const { Transform ,pipeline} = require('stream');
+const Clients = require('./clients');
 
 //var runTime = require('./runtime');
 
@@ -446,17 +447,26 @@ fs.exists(realPath, function (exists) {
             runData.startTime = (new Date()).getTime();
             runData.status = 'paused';
             runData.key = req.headers.key;
-        runTime.addHistory({
-            ip: req.headers.ip,
-            hostName:runTime.hosts[req.headers.ip].hostName,
-            id: '',
-            type: 1, 
-            content: rawData,
-            contentType: 'file', //text file
-            time: new Date().getTime()
-        });
+        
+        
+        req.on('end',()=>{
+            runTime.addHistory({
+                ip: req.headers.ip,
+                hostName:runTime.hosts[req.headers.ip].hostName,
+                id: '',
+                type: 1, 
+                content: runData,
+                contentType: 'file', //text file
+                time: new Date().getTime()
+            });
+            res.end();
+        })
         req.resume();
-        res.end();
+
+        // setTimeout(()=>{
+        //     Clients.acceptFile(key);
+        // });
+       
     },
     RSpool:{},//sendFile 的 rs对象池
     on_file: function (req, res) {

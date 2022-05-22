@@ -107,24 +107,19 @@ module.exports = {
         h.content.status = 'paused';
     }
   },
-  resumeFileSend:function(key){
-    if(typeof this.RSpool[key][0] == "object"){
-      this.RSpool[key][0].resume();
-      this.RSpool[key][1].resume();
-      let h = runTime.getHistory(key);
-      if(h)
-        h.content.status = 'sending';
-    }
+  resumeFileSend:function(key){console.log(key);
+    this.acceptFile(key);
   },
 
   acceptFile:function(key){
-    let h = runTime.getHistory(key);
+    let h = runTime.getHistory(key);console.log(h);
     let runData = h.content;
 
-    var ws = fs.createWriteStream(target_file, {
+    var ws = fs.createWriteStream(runData.path, {
       flags: 'w',
   });
-    var req = this.sender('getFile', ip, fs.statSync(file.path).size, (chunk)=>{
+    var req = this.sender('getFile', h.ip, 0, (err,chunk)=>{console.log(err,chunk);
+      if(err !== 1)return;
       runData.transferred += chunk.length;
       runData.elapsed = (new Date().getTime()) - runData.startTime;
       ws.write(chunk);
@@ -133,7 +128,7 @@ module.exports = {
       key:runData.key,
       "Content-Range": `bytes ${runData.transferred}-`
     });
-    
+    //req.end();
   },
   
   /**
@@ -218,7 +213,7 @@ module.exports = {
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
         'cmd': type,
-        'ip': Utils.getLocalIp(), //注意自定义header的值有符号要求
+        'ip': runTime.localIp,// Utils.getLocalIp(), //注意自定义header的值有符号要求
         'id': runTime.localId,
         'findingCode': runTime.settings.findingCode.code,//server接收到的是小写key：findingcode
       },
@@ -229,7 +224,7 @@ module.exports = {
         options.headers[i] = headers[i];
       }
     }
-
+console.log(options)
     const req = http.request(options, (res) => {
       console.log(`状态码: ${res.statusCode}`);
       console.log(`响应头: ${JSON.stringify(res.headers)}`);

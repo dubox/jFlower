@@ -150,9 +150,9 @@ utools.onPluginReady(() => {
             },
             resume(h){
                 if(h.type==2)
-                Clients.resumeFileSend(h._id);
-                if(h.type==1)
                 Server.resumeFileSend(h._id);
+                if(h.type==1)
+                Clients.resumeFileSend(h._id);
             },
         },
         unlink(path){
