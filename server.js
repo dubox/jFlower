@@ -244,7 +244,9 @@ var server = {
             
     },
     on_getFile:function(req, res){
-
+        let h = runTime.getHistory(req.headers.key);console.log(h);
+        let runData = h.content;
+        let realPath = runData.path;
         fs.stat(realPath, function (err, stats) {
             if(err){
                 res.writeHead(404, {
@@ -275,6 +277,11 @@ var server = {
                 end: end,
                 //highWaterMark: 2560 * 1024
             });
+
+            rs.on('data', function (chunk) {
+                runData.transferred += chunk.length;
+                runData.elapsed = (new Date().getTime()) - runData.startTime;
+                    });
 
             rs.on('ready', function () {
                 rs.pipe(res);
