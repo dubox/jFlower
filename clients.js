@@ -99,13 +99,7 @@ module.exports = {
     }
   },
   pauseFileSend:function(key){
-    if(typeof this.RSpool[key][0] == "object"){
-      this.RSpool[key][1].pause();
-      this.RSpool[key][0].pause();
-      let h = runTime.getHistory(key);
-      if(h)
-        h.content.status = 'paused';
-    }
+    this.RSpool[key].destroy();
   },
   resumeFileSend:function(key){console.log(key);
     this.acceptFile(key);
@@ -117,18 +111,37 @@ module.exports = {
 
     var ws = fs.createWriteStream(runData.path, {
       flags: 'w',
-  });
-    var req = this.sender('getFile', h.ip, 0, (err,chunk)=>{console.log(err,chunk);
-      if(err !== 1)return;
+    });
+    runData.status = 'sending';
+    runData.startTime = new Date().getTime();
+    var req = this.sender('getFile', h.ip, new Buffer('a').length, (err,chunk ,res)=>{
+      if(err === 0){
+        ws.end();
+        res.destroy();
+      }
+      if(err !== 1){
+        ws.destroy();
+        res.destroy();
+        return;
+      }
       runData.transferred += chunk.length;
       runData.elapsed = (new Date().getTime()) - runData.startTime;
       ws.write(chunk);
     },{
       file_name: encodeURI(runData.name),
       key:runData.key,
-      "Content-Range": `bytes ${runData.transferred}-`
+      "range": `bytes=${runData.transferred}-`
     });
-    //req.end();
+    req.write('a', 'utf8', () => {
+      req.end();
+    }); //
+    ws.on("end",()=>{
+      runData.status = 'completed';
+    });
+    ws.on("error",()=>{
+      runData.status = 'paused';
+    });
+    _this.RSpool[key] = [ws];
   },
   
   /**
@@ -224,26 +237,26 @@ module.exports = {
         options.headers[i] = headers[i];
       }
     }
-console.log(options)
+console.log(options);
     const req = http.request(options, (res) => {
       console.log(`状态码: ${res.statusCode}`);
       console.log(`响应头: ${JSON.stringify(res.headers)}`);
 
-      res.setEncoding('utf8');
+      //res.setEncoding('utf8');
       res.on('data', (chunk) => {
-        console.log(`响应主体: ${chunk}`);
-        if(cb)cb(1,chunk);
+        //console.log(`响应主体: ${chunk}`);
+        if(cb)cb(1,chunk ,res);
       });
       res.on('end', () => {
         console.log('res end');
-        if (res.statusCode == 200)
-          cb(0);
+        if (res.statusCode == 200 || res.statusCode == 206)
+          cb(0,null  ,res);
         else
-          cb(new Error(res.statusCode), ip);
+          cb(new Error(res.statusCode), ip ,res);
 
           req.end();
       });
-    });
+    });console.log(req);
 
     req.on('error', (e) => {
       console.error(`请求遇到问题: ${e.message}`);

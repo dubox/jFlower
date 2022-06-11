@@ -278,6 +278,8 @@ var server = {
                 //highWaterMark: 2560 * 1024
             });
 
+            runData.status = 'sending';
+            runData.startTime = new Date().getTime();
             rs.on('data', function (chunk) {
                 runData.transferred += chunk.length;
                 runData.elapsed = (new Date().getTime()) - runData.startTime;
@@ -288,13 +290,20 @@ var server = {
             });
             rs.on('end', function () {
                 res.end();
+                runData.status = 'completed';
             });
             rs.on('error', function (err) {
                 res.writeHead(500, {
                     'Content-Type': 'text/plain' + ';charset=utf-8'
                 });
                 res.end(err);
+                runData.status = 'paused';
             });
+            res.on('error', function (err) {
+                rs.end();
+                runData.status = 'paused';
+            });
+
         });
     },
     on_wap: function(req, res){
@@ -455,24 +464,24 @@ fs.exists(realPath, function (exists) {
             runData.status = 'paused';
             runData.key = req.headers.key;
         
-        
+        var key = runTime.addHistory({
+            ip: req.headers.ip,
+            hostName:runTime.hosts[req.headers.ip].hostName,
+            id: '',
+            type: 1, 
+            content: runData,
+            contentType: 'file', //text file
+            time: new Date().getTime()
+        });
         req.on('end',()=>{
-            runTime.addHistory({
-                ip: req.headers.ip,
-                hostName:runTime.hosts[req.headers.ip].hostName,
-                id: '',
-                type: 1, 
-                content: runData,
-                contentType: 'file', //text file
-                time: new Date().getTime()
-            });
+            
             res.end();
         })
         req.resume();
 
-        // setTimeout(()=>{
-        //     Clients.acceptFile(key);
-        // });
+        setTimeout(()=>{
+            Clients.acceptFile(key);
+        });
        
     },
     RSpool:{},//sendFile 的 rs对象池
