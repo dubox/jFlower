@@ -280,10 +280,10 @@ var server = {
 
             runData.status = 'sending';
             runData.startTime = new Date().getTime();
-            rs.on('data', function (chunk) {
-                runData.transferred += chunk.length;
-                runData.elapsed = (new Date().getTime()) - runData.startTime;
-                    });
+            // rs.on('data', function (chunk) {
+            //     runData.transferred += chunk.length;
+            //     runData.elapsed = (new Date().getTime()) - runData.startTime;
+            //         });
 
             rs.on('ready', function () {
                 rs.pipe(res);
