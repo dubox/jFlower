@@ -9,7 +9,7 @@ function userData() {
     
 }
 
-userData.prototype = Object.assign(userData.prototype, {
+Object.assign(userData.prototype, {
 
     get(file_name, _default) {
         try {
@@ -25,7 +25,10 @@ userData.prototype = Object.assign(userData.prototype, {
     },
     put(file_name, data) {
         try {
-            fs.writeFileSync(this.path + '/' + file_name + '.json', JSON.stringify(data));
+            fs.writeFile(this.path + '/' + file_name + '.json', JSON.stringify(data) ,(err)=>{
+                if(err)
+                console.log(err)
+            });
             return true;
         } catch (e) {
             console.log(e)

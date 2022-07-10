@@ -124,8 +124,13 @@ module.exports = {
         res.destroy();
         return;
       }
-      //runData.transferred += chunk.length;
-      //runData.elapsed = (new Date().getTime()) - runData.startTime;
+      
+      elapsed = (new Date().getTime()) - runData.startTime;
+      if(elapsed - runData.elapsed > 200)
+        Object.assign(runData ,{
+          transferred: runData.transferred + chunk.length,
+          elapsed: (new Date().getTime()) - runData.startTime
+        });
       ws.write(chunk);
     },{
       file_name: encodeURI(runData.name),

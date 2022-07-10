@@ -170,7 +170,7 @@ module.exports = {
     },
     updHistory: function () {
         let res = userData.put('history', this.history);
-        console.log('upd history:', res);
+        //console.log('upd history:', res);
     },
     delHistory: function (index) {
         let curr = this.history.splice(index, 1);console.log(curr)

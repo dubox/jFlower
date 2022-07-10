@@ -280,16 +280,26 @@ var server = {
 
             runData.status = 'sending';
             runData.startTime = new Date().getTime();
-            // rs.on('data', function (chunk) {
-            //     runData.transferred += chunk.length;
-            //     runData.elapsed = (new Date().getTime()) - runData.startTime;
-            //         });
-
+            transferred = 0;
+            elapsed = 0;
+            rs.on('data', function (chunk) {//console.log('server.data')
+                transferred += chunk.length;
+                elapsed = (new Date().getTime()) - runData.startTime;
+                if(elapsed - runData.elapsed > 200)
+                Object.assign(runData ,{
+                    transferred: transferred,
+                    elapsed: elapsed
+                  });
+                });
             rs.on('ready', function () {
                 rs.pipe(res);
             });
             rs.on('end', function () {
                 res.end();
+                Object.assign(runData ,{
+                    transferred: transferred,
+                    elapsed: elapsed
+                  });
                 runData.status = 'completed';
             });
             rs.on('error', function (err) {
