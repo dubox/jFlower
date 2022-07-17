@@ -113,41 +113,47 @@ module.exports = {
       flags: 'w',
     });
     runData.status = 'sending';
-    runData.startTime = new Date().getTime();
+    var startTime = new Date().getTime();
+    // runData.startTime || (runData.startTime = startTime);
+    var elapsed = runData.elapsed;
+    var transferred = runData.transferred;
     var req = this.sender('getFile', h.ip, new Buffer('a').length, (err,chunk ,res)=>{
-      if(err === 0){
-        ws.end();
-        res.destroy();
-      }
-      if(err !== 1){
-        ws.destroy();
-        res.destroy();
-        return;
-      }
-      
-      elapsed = (new Date().getTime()) - runData.startTime;
-      if(elapsed - runData.elapsed > 200)
-        Object.assign(runData ,{
-          transferred: runData.transferred + chunk.length,
-          elapsed: (new Date().getTime()) - runData.startTime
-        });
-      ws.write(chunk);
-    },{
-      file_name: encodeURI(runData.name),
-      key:runData.key,
-      "range": `bytes=${runData.transferred}-`
-    });
-    req.write('a', 'utf8', () => {
-      req.end();
-    }); //
+        if(err === 0){console.log(err)
+          ws.end();
+          return;
+        }
+        if(err !== 1){
+          ws.destroy();
+          return;
+        }
+        ws.write(chunk);
+        elapsed = (new Date().getTime()) - startTime;
+        transferred = transferred + chunk.length;
+        if(elapsed - runData.elapsed > 200)
+          Object.assign(runData ,{
+            transferred: transferred,
+            elapsed: elapsed
+          });
+        
+      },{
+        file_name: encodeURI(runData.name),
+        key:runData.key,
+        "range": `bytes=${runData.transferred}-`
+      });
+      req.write('a', 'utf8', () => {
+        req.end();
+      }); //
     ws.on("end",()=>{
-      runData.elapsed = (new Date().getTime()) - runData.startTime;
-      runData.status = 'completed';
+      Object.assign(runData ,{
+        transferred: transferred,
+        elapsed:  elapsed,
+        status: 'completed'
+      });
     });
     ws.on("error",()=>{
       runData.status = 'paused';
     });
-    _this.RSpool[key] = [ws];
+    //_this.RSpool[key] = [ws];
   },
   
   /**
