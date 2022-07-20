@@ -118,22 +118,25 @@ module.exports = {
     var elapsed = runData.elapsed;
     var transferred = runData.transferred;
     var req = this.sender('getFile', h.ip, new Buffer('a').length, (err,chunk ,res)=>{
-        if(err === 0){console.log(err)
-          ws.end();
-          return;
-        }
-        if(err !== 1){
-          ws.destroy();
-          return;
-        }
+        
+      if(err === 1){
         ws.write(chunk);
         elapsed = (new Date().getTime()) - startTime;
-        transferred = transferred + chunk.length;
+        transferred += chunk.length;
         if(elapsed - runData.elapsed > 200)
           Object.assign(runData ,{
             transferred: transferred,
             elapsed: elapsed
           });
+      }
+      else if(err === 0){console.log(err)
+          ws.end();
+          return;
+        }else{
+          ws.destroy();
+          return;
+        }
+        
         
       },{
         file_name: encodeURI(runData.name),
@@ -143,7 +146,7 @@ module.exports = {
       req.write('a', 'utf8', () => {
         req.end();
       }); //
-    ws.on("end",()=>{
+    ws.on("finish",()=>{console.log(transferred)
       Object.assign(runData ,{
         transferred: transferred,
         elapsed:  elapsed,
@@ -151,7 +154,11 @@ module.exports = {
       });
     });
     ws.on("error",()=>{
-      runData.status = 'paused';
+      Object.assign(runData ,{
+        transferred: transferred,
+        elapsed:  elapsed,
+        status: 'paused'
+      });
     });
     //_this.RSpool[key] = [ws];
   },

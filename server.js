@@ -264,7 +264,7 @@ var server = {
             //获取客户端请求文件的结束位置
             var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
             //获取需要读取的文件大小
-            var chunksize = (end - start) + 1;
+            var chunksize = (end - start) + 1;console.log(total,end,chunksize)
             res.writeHead(206, {
                 "Content-Range": "bytes " + start + "-" + end + "/" + total,
                 "Accept-Ranges": "bytes",
@@ -298,9 +298,9 @@ var server = {
                 res.end();
                 Object.assign(runData ,{
                     transferred: transferred,
-                    elapsed: elapsed
+                    elapsed: elapsed,
+                    status:'completed'
                   });
-                runData.status = 'completed';
             });
             rs.on('error', function (err) {
                 res.writeHead(500, {
