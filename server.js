@@ -286,33 +286,63 @@ var server = {
             rs.on('data', function (chunk) {//console.log('server.data')
                 transferred += chunk.length;
                 elapsed = (new Date().getTime()) - runData.startTime;
-                if(elapsed - runData.elapsed > 200)
-                Object.assign(runData ,{
-                    transferred: transferred,
-                    elapsed: elapsed
-                  });
+                if(elapsed - runData.elapsed > 200){
+                    Object.assign(runData ,{
+                        transferred: transferred,
+                        elapsed: elapsed
+                      });
+                    if(runData.status == 'paused'){console.log(runData.status);
+                        res.destroy();
+                        rs.destroy();
+                      }
+                }
+                
                 });
             rs.on('ready', function () {
                 rs.pipe(res);
             });
             rs.on('end', function () {
-                res.end();
                 Object.assign(runData ,{
                     transferred: transferred,
                     elapsed: elapsed,
                     status:'completed'
                   });
+                  res.end();
             });
             rs.on('error', function (err) {
+                Object.assign(runData ,{
+                    transferred: transferred,
+                    elapsed:  elapsed,
+                    status: 'paused'
+                  });
                 res.writeHead(500, {
                     'Content-Type': 'text/plain' + ';charset=utf-8'
                 });
                 res.end(err);
-                runData.status = 'paused';
             });
             res.on('error', function (err) {
-                rs.end();
-                runData.status = 'paused';
+                Object.assign(runData ,{
+                    transferred: transferred,
+                    elapsed:  elapsed,
+                    status: 'paused'
+                  });
+                rs.destroy();
+            });
+            req.on('error', function (err) {
+                Object.assign(runData ,{
+                    transferred: transferred,
+                    elapsed:  elapsed,
+                    status: 'paused'
+                  });
+                rs.destroy();
+            });
+            req.on('end', function (err) {
+                Object.assign(runData ,{
+                    transferred: transferred,
+                    elapsed:  elapsed,
+                    status: 'paused'
+                  });
+                rs.destroy();
             });
 
         });
@@ -606,7 +636,7 @@ fs.exists(realPath, function (exists) {
     runData.status = 'paused';
     },
     resumeFileSend:function(key){
-
+        utils.toast('续传只能由接收方发起');
     },
     cancelFileSend:function(key){
 
