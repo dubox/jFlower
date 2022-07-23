@@ -137,22 +137,22 @@ utools.onPluginReady(() => {
         },
         fileSend:{
             cancel(h){
-                if(h.type==2)
-                Clients.cancelFileSend(h._id);
                 if(h.type==1)
+                Clients.cancelFileSend(h._id);
+                if(h.type==2)
                 Server.cancelFileSend(h._id);
             },
             pause(h){
-                if(h.type==2)
-                Clients.pauseFileSend(h._id);
                 if(h.type==1)
+                Clients.pauseFileSend(h._id);
+                if(h.type==2)
                 Server.pauseFileSend(h._id);
             },
             resume(h){
-                if(h.type==2)
-                Server.resumeFileSend(h._id);
                 if(h.type==1)
                 Clients.resumeFileSend(h._id);
+                if(h.type==2)
+                Server.resumeFileSend(h._id);
             },
         },
         unlink(path){

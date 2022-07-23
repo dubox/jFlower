@@ -290,6 +290,14 @@ module.exports = {
                 console.log(err);
             });
         });
+    },
+
+    checkFileExists(path ,name){
+        if(fs.existsSync(path+name)){
+            //如果文件存在则重命名文件
+            return this.checkFileExists(path ,'1_'+name);
+        }
+        return name;
     }
 
 }

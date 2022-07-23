@@ -7,6 +7,7 @@ const mine = require('./mine').types;
 const mp4 = require('./libs/mp4');
 const { Transform ,pipeline} = require('stream');
 const Clients = require('./clients');
+const utils = require('./utils');
 
 //var runTime = require('./runtime');
 
@@ -465,8 +466,10 @@ fs.exists(realPath, function (exists) {
     },
     on_fileAsk: function (req, res) {
         var runData = {};
-        runData.name = decodeURI(req.headers.file_name);
-        runData.path = utools.getPath('downloads') + path.sep + runData.name;
+        runData.path = utools.getPath('downloads') + path.sep;
+        runData.name = utils.checkFileExists(runData.path,decodeURI(req.headers.file_name));
+        runData.path += runData.name;
+        
         runData.total = parseInt(req.headers['content-length']);
         runData.transferred = 0;
             runData.elapsed = 0;
@@ -597,36 +600,48 @@ fs.exists(realPath, function (exists) {
         }
 
     },
+    pauseFileSend:function(key){
+        let h = runTime.getHistory(key);console.log(h);
+    let runData = h.content;
+    runData.status = 'paused';
+    },
+    resumeFileSend:function(key){
+
+    },
     cancelFileSend:function(key){
-        if(typeof this.RSpool[key][0] == "object"){
-          this.RSpool[key][0].unpipe();
-          this.RSpool[key][0].destroy(new Error('User canceled'));
-        }
-      },
-      pauseFileSend:function(key){console.log(key);console.log(this.RSpool[key])
-        if(typeof this.RSpool[key][0] == "object"){
-            this.RSpool[key][0].socket.pause();
-            //this.RSpool[key][1].pause();
-            this.RSpool[key][0].pause();
-            //this.RSpool[key][0].unpipe();
-            //this.RSpool[key].removeListener('data',this.RSpool[key].onDataListener);
-          let h = runTime.getHistory(key);
-          if(h)
-            h.content.status = 'paused';
-        }
-      },
-      resumeFileSend:function(key){
-        if(typeof this.RSpool[key][0] == "object"){
-          //this.RSpool[key][0].pipe(this.RSpool[key][1]);
-          //this.RSpool[key].on('data', this.RSpool[key].onDataListener);
-          //this.RSpool[key][1].resume();
-          this.RSpool[key][0].resume();
-          this.RSpool[key][0].socket.resume();
-          let h = runTime.getHistory(key);
-          if(h)
-            h.content.status = 'sending';
-        }
-      },
+
+    },
+
+    // cancelFileSend:function(key){
+    //     if(typeof this.RSpool[key][0] == "object"){
+    //       this.RSpool[key][0].unpipe();
+    //       this.RSpool[key][0].destroy(new Error('User canceled'));
+    //     }
+    //   },
+    //   pauseFileSend:function(key){console.log(key);console.log(this.RSpool[key])
+    //     if(typeof this.RSpool[key][0] == "object"){
+    //         this.RSpool[key][0].socket.pause();
+    //         //this.RSpool[key][1].pause();
+    //         this.RSpool[key][0].pause();
+    //         //this.RSpool[key][0].unpipe();
+    //         //this.RSpool[key].removeListener('data',this.RSpool[key].onDataListener);
+    //       let h = runTime.getHistory(key);
+    //       if(h)
+    //         h.content.status = 'paused';
+    //     }
+    //   },
+    //   resumeFileSend:function(key){
+    //     if(typeof this.RSpool[key][0] == "object"){
+    //       //this.RSpool[key][0].pipe(this.RSpool[key][1]);
+    //       //this.RSpool[key].on('data', this.RSpool[key].onDataListener);
+    //       //this.RSpool[key][1].resume();
+    //       this.RSpool[key][0].resume();
+    //       this.RSpool[key][0].socket.resume();
+    //       let h = runTime.getHistory(key);
+    //       if(h)
+    //         h.content.status = 'sending';
+    //     }
+    //   },
     on_img: function (req, res) {
         console.log('img');
         req.setEncoding('utf8');

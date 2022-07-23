@@ -99,7 +99,9 @@ module.exports = {
     }
   },
   pauseFileSend:function(key){
-    this.RSpool[key].destroy();
+    let h = runTime.getHistory(key);console.log(h);
+    let runData = h.content;
+    runData.status = 'paused';
   },
   resumeFileSend:function(key){console.log(key);
     this.acceptFile(key);
@@ -116,23 +118,30 @@ module.exports = {
     var startTime = new Date().getTime();
     // runData.startTime || (runData.startTime = startTime);
     var elapsed = runData.elapsed;
-    var transferred = runData.transferred;
+    let fstat = fs.statSync(runData.path,{throwIfNoEntry:false});
+    var transferred = fstat ? fstat.size : 0;
     var req = this.sender('getFile', h.ip, new Buffer('a').length, (err,chunk ,res)=>{
         
       if(err === 1){
         ws.write(chunk);
         elapsed = (new Date().getTime()) - startTime;
         transferred += chunk.length;
-        if(elapsed - runData.elapsed > 200)
+        if(elapsed - runData.elapsed > 200){
           Object.assign(runData ,{
             transferred: transferred,
             elapsed: elapsed
           });
+          if(runData.status == 'paused'){console.log(runData.status);
+            res.destroy();
+            ws.destroy();
+          }
+        }
+          
       }
-      else if(err === 0){console.log(err)
+      else if(err === 0){
           ws.end();
           return;
-        }else{
+        }else{console.log(err)
           ws.destroy();
           return;
         }
