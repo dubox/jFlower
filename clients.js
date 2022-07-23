@@ -161,7 +161,7 @@ module.exports = {
         elapsed:  elapsed,
         status: 'completed'
       });
-      utools.shellShowItemInFolder(target_file);
+      utools.shellShowItemInFolder(runData.path);
     });
     ws.on("error",()=>{
       Object.assign(runData ,{
