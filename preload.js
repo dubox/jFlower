@@ -6,6 +6,7 @@ var Clients = require('./clients');
 //const runtime = require('./runtime');
 
 const fs = require('fs');
+const path = require('path');
 //const { runTime } = require('./clients');
 //console.log(`本机ip：${Utils.getLocalIp()}`);
 const { versions } = require('process');
@@ -78,6 +79,7 @@ utools.onPluginReady(() => {
     window.app = {
         ready: false,
         localIp: runTime.localIp,
+        path:path,
         openShareUrl: () => {
             utools.shellOpenExternal('http://' + runTime.localIp + ':' + Server.port + '/share');
         },
@@ -121,7 +123,7 @@ utools.onPluginReady(() => {
             utools.db.remove(runTime.localId + ':settings');
             utools.db.remove(runTime.localId + ':history');
         },
-        copy: function (content, type) {
+        copy: function (content, type) {console.log(content)
             if (type == 'file')
                 return utools.copyFile(content);
             if (type == 'img')

@@ -93,10 +93,10 @@ module.exports = {
     _this.RSpool[key] = [rs,transform];
   },
   cancelFileSend:function(key){
-    if(typeof this.RSpool[key][0] == "object"){
-      this.RSpool[key][0].unpipe();
-      this.RSpool[key][0].destroy(new Error('User canceled'));
-    }
+    let h = runTime.getHistory(key);console.log(h);
+    let runData = h.content;
+    runData.status = 'paused';
+    runTime.delHistory(key);
   },
   pauseFileSend:function(key){
     let h = runTime.getHistory(key);console.log(h);

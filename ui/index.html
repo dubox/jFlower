@@ -162,7 +162,7 @@
             <Scroll :height="document.documentElement.clientHeight" style="width: 100%;">
 
                 <Row v-for="(item ,index) in _history" :key="index" :s="index" type="flex" align="middle">
-                    <i-col :span="item.type==2?10:2"></i-col>
+                    <i-col :span="item.type==2 ?(runTime.imgPreView==index ?2:10):2"></i-col>
                     <i-col span="12" class="col" align="middle">
                         <i-time :time="item.time" :interval="10" style="color: #9ea7b4;font-size: 12px;"></i-time>
                         <Card>
@@ -173,6 +173,14 @@
                                 <Icon v-if="item.type==1" type="ios-paper-plane-outline" size="20"
                                     style="transform: rotate(80deg);"></Icon>
                             </p>
+                            <a v-if="item.contentType=='img' && runTime.imgPreView != index" href="#" slot="extra"
+                                @click.prevent="runTime.imgPreView = index">
+                                <Icon type="ios-eye-outline"  size="20"/>
+                            </a>
+                            <a v-if="item.contentType=='img' && runTime.imgPreView == index" href="#" slot="extra"
+                                @click.prevent="runTime.imgPreView = -1">
+                                <Icon type="ios-eye-off-outline"  size="20"/>
+                            </a>
                             <a v-if="item.contentType=='file'" href="#" slot="extra"
                                 @click.prevent="copy(item.content.path,item.contentType)">
                                 <Icon type="ios-copy-outline" size="20"></Icon>
@@ -180,6 +188,10 @@
                             <a v-if="item.contentType!='file'" href="#" slot="extra"
                                 @click.prevent="copy(item.content,item.contentType)">
                                 <Icon type="ios-copy-outline" size="20"></Icon>
+                            </a>
+                            <a v-if="item.contentType=='img'" href="#" slot="extra"
+                                @click.prevent="saveImg(item.content)">
+                                <Icon type="ios-download-outline"  size="20"/>
                             </a>
                             <a href="#" slot="extra"
                                 @click.prevent="del(index)">
@@ -193,7 +205,7 @@
                                 <span v-html="item.content"></span>
                             </p>
                             <p v-if="item.contentType=='img'">
-                                <img :src="item.content" width="100%" />
+                                <img :src="item.content" style="max-width: 100%;" />
                             </p>
                             <i-circle v-if="item.contentType=='file'" :size="300" :trail-width="4" :stroke-width="5"
                                 :percent="Math.round((item.content.transferred/item.content.total)*100)"
@@ -226,7 +238,7 @@
                         </a>
                         </Card>
                     </i-col>
-                    <i-col :span="item.type==2?2:10"></i-col>
+                    <i-col :span="item.type==2?2:(runTime.imgPreView==index ?2:10)"></i-col>
                 </Row>
 
 

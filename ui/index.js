@@ -9,7 +9,8 @@ app.ui = new Vue({
             fileReceive: app.serverRunTime.fileReceive,
             serverState: app.serverState,
             localIp: app.localIp,
-            history: app.history
+            history: app.history,
+            imgPreView:-1
         },
         settings: app.settings,
         drawer: false,
@@ -74,6 +75,17 @@ app.ui = new Vue({
             else
                 this.toast('复制失败！', 'error');
         },
+        saveImg(content){
+            
+            let buf = this.dataURLToBuffer(content);
+            file_name = 'jFlower.' + Math.ceil( Math.random()*1000)+'.'+buf.type;
+            var file_path = utools.getPath('downloads') + app.path.sep + file_name;
+            
+            fs.writeFileSync(file_path,new DataView(buf.buffer));
+            //fs.writeFileSync(file_path, this.dataURLToBlob(content) );
+            //this.dataURLtoFile(content,file_name);
+            utools.shellShowItemInFolder(file_path);
+       },
         del: function (index) {
             this.fileCancel(app.delHistory(index));
         },
@@ -111,6 +123,37 @@ app.ui = new Vue({
             this.modal.show=true;
             this.modal.msg=msg;
             this.modal.cb=cb;
+        },
+        dataURLToBuffer(fileDataURL) {
+            let arr = fileDataURL.split(','),
+                type = arr[0].match(/:.*\/(.*?);/)[1],
+                bstr = atob(arr[1]),
+                n = bstr.length,
+                u8arr = new Uint8Array(n);//return bstr;
+            while(n --) {
+              u8arr[n] = bstr.charCodeAt(n)
+            }
+            return {buffer:u8arr.buffer ,type:type};
+            //return new Blob([u8arr], {type: mime})
+        },
+        dataURLToBlob(fileDataURL) {
+            let arr = fileDataURL.split(','),
+                mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]),
+                n = bstr.length,
+                u8arr = new Uint8Array(n);//return bstr;
+            while(n --) {
+              u8arr[n] = bstr.charCodeAt(n)
+            }
+            return new Blob([u8arr], {type: mime})
+        },
+        dataURLtoFile(dataUrl, fileName) {
+            var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], fileName, {type:mime});
         }
     },
     mounted() {
@@ -136,7 +179,7 @@ app.ui = new Vue({
         },
         'runTime.history':{
             handler(newVal, oldVal) {
-                app.updHistory();
+                //app.updHistory();
             },
             deep: true
         }
