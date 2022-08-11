@@ -177,12 +177,6 @@ app.ui = new Vue({
             },
             deep: true
         },
-        'settings.freeWin':{
-            handler(newVal, oldVal) {
-                if(newVal)
-                app.showFreeWin();
-            },
-        },
         'runTime.history':{
             handler(newVal, oldVal) {
                 //app.updHistory();

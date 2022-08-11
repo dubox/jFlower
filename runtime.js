@@ -91,6 +91,7 @@ module.exports = {
         //         lastActive:1287554455
         //     }
         // },
+        freeWin:true
 
     },
     //取值

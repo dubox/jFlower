@@ -160,13 +160,49 @@ utools.onPluginReady(() => {
         unlink(path){
             fs.unlinkSync(path);
         },
+        showFreeWin(){
+            if(! runTime.settings.freeWin){
+                return;
+            }
+            let options = {
+                title: '测试窗口',
+                width: 128,
+                height: 300,
+                useContentSize:true,
+                fullscreen: false,
+                // autoHideMenuBar: true,
+                //skipTaskbar: true,
+                backgroundColor: '#323332',
+                webPreferences: {
+                    //preload: './game_exts/winCtrl.js',
+                    nodeIntegration: true,
+                    enableRemoteModule:true,
+                    contextIsolation: true
+                },
+                hasShadow: false,
+                    transparent: true,
+                    backgroundColor: '#00ffffff',
+                    frame: false,
+                    titleBarStyle: 'customButtonsOnHover',//'hiddenInset', //
+            };console.log(options)
+            const win = utools.createBrowserWindow('ui/freeWin/index.html', options, () => {
+                // 向子窗口传递数据
+                //ipcRenderer.sendTo(webContentsId, 'ping', data);
+                //console.log('aaa')
+                //console.log('ok', electron);
+                //BrowserWindow.fromId(webContentsId).webContents.openDevTools()
+            });
+            console.log(win)
+        },
         init() {
-
+            
         }
     };
+
     
     require('./ui/index');
     init();
     Utils.log("onPluginReady:runTime:", JSON.parse(JSON.stringify(runTime._settings)));
+    console.log(runTime.settings.freeWin)
     
 });

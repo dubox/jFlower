@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <title>jFlower</title>
-    <script type="text/javascript" src="iview/vue.min.js"></script>
-    <link rel="stylesheet" href="iview/iview.css">
-    <script type="text/javascript" src="iview/iview.min.js"></script>
+    <script type="text/javascript" src="../iview/vue.min.js"></script>
+    <link rel="stylesheet" href="../iview/iview.css">
+    <script type="text/javascript" src="../iview/iview.min.js"></script>
     <style>
         [v-cloak] {
             display: none;
@@ -142,6 +142,7 @@
 </head>
 
 <body>
+    <div  style="-webkit-app-region: drag;width: 100%;height: 10px;background-color: #2db7f5;"></div>
     <div id="ui" v-cloak>
         <Layout class="layout" style="position: absolute;left: 0;top: 0;width: 100%; opacity: 0.5;">
             <Row type="flex" align="middle">
@@ -149,7 +150,7 @@
                 <i-col span="8" class="col" align="middle">
                     <Card :bordered="false" style="width:520px;margin: 50px auto;">
                         <div style="text-align:center">
-                            <img src="img/logo.png" width="60%">
+                            <img src="../img/logo.png" width="60%">
                             <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp + ':' +runTime.localPort}}</h2>
                                 <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h2>
                         </div>
@@ -324,12 +325,6 @@
                 <i-col span="4">
                     <i-button type="info" size="small" @click="app.detect()">ok</i-button>
                 </i-col>
-            </Row>
-            <Row :class="'bottom-line'">
-                <i-col span="24">
-                    任意窗:<i-switch v-model="settings.freeWin" size="small"></i-switch>
-                </i-col>
-                
             </Row>
             <Row>
                 <i-col span="24">
