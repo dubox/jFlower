@@ -23,17 +23,25 @@ module.exports = {
     getLocalIp: function () {
         var map = [];
         var nif = os.networkInterfaces();
-        console.log('nif:', nif);
         this.log('nif:', nif);
         runTime.localIp = '';
+        var level = 0;
         for (let i in nif) {
-            if (nif[i].length > 1)
                 for (let ii in nif[i]) {
-                    //if (!runTime.localIp && nif[i][ii].address.indexOf('192.168') === 0)
-                    if (!runTime.localIp && nif[i][ii].family == 'IPv4' && !nif[i][ii].internal)
+                    if(nif[i][ii].family.toLowerCase() != 'ipv4' || nif[i][ii].internal)continue;
+
+                    var l = 0;
+                    if(!runTime.localIp)   l = 1;
+                    if(!/^(utun|v)/i.test(i))    l=2;
+                    if(/^192\.168/.test( nif[i][ii].address))    l=3;
+                    if(/^(以太网|en|eth|wlan)/i.test(i))  l=4;
+                    if(nif[i][ii].address == runTime.settings.localIp) l=5;
+
+                    if(l > level){
+                        level = l;this.log(level);
                         runTime.localIp = nif[i][ii].address;
-                    if (nif[i][ii].address == runTime.settings.localIp)
-                        return runTime.localIp = nif[i][ii].address;
+                        if(l==5)return runTime.localIp;
+                    }
                 }
         }
         if (runTime.settings.localIp)
@@ -271,7 +279,7 @@ module.exports = {
     },
 
     log(...logs) {
-        console.log(runTime.settings.log);
+        console.log(runTime.settings.log,...logs);
         if (!runTime.settings.log) return;
         logger.log(`[${new Date().toLocaleString()}]`, ...logs);
     },
