@@ -101,16 +101,16 @@ utools.onPluginReady(() => {
         showFile: function (path) {
             utools.shellShowItemInFolder(path);
         },
-        selectPath: function (defaultPath) {
+        selectPath: function (target, defaultPath) {
             let path = utools.showOpenDialog({
                 title: '选择文件夹',
-                defaultPath: runTime.settings.sharePath || utools.getPath('downloads'),
+                defaultPath: runTime.settings[target],
                 buttonLabel: '选择',
                 properties: ['openDirectory']
             });
             console.log(path);
             if (path)
-                runTime.setting.sharePath = path[0];
+                runTime.setting[target] = path[0];
             return !!path;
         },
         detect: function (ipSeg) {

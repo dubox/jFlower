@@ -79,7 +79,7 @@ app.ui = new Vue({
             
             let buf = this.dataURLToBuffer(content);
             file_name = 'jFlower.' + Math.ceil( Math.random()*1000)+'.'+buf.type;
-            var file_path = utools.getPath('downloads') + app.path.sep + file_name;
+            var file_path = runTime.settings.downloadPath + app.path.sep + file_name;
             
             fs.writeFileSync(file_path,new DataView(buf.buffer));
             //fs.writeFileSync(file_path, this.dataURLToBlob(content) );
@@ -163,15 +163,6 @@ app.ui = new Vue({
     watch: {
         settings: {
             handler(newVal, oldVal) {
-                // console.log('newVal:', newVal);
-                // console.log('oldVal:', oldVal);
-                // console.log(newVal.findingCode.isOnly, oldVal.findingCode.isOnly)
-                // if (newVal.findingCode.isOnly != oldVal.findingCode.isOnly) {
-                //     if (newVal.otherIpSeg)
-                //         app.detect(newVal.otherIpSeg);
-                //     app.detect();
-                // }
-
                 app.updSettings();
 
             },
@@ -181,8 +172,8 @@ app.ui = new Vue({
             handler(newVal, oldVal) {
                 //app.updHistory();
             },
-            deep: true
-        }
+            //deep: true
+        },
     }
 });
 

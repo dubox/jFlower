@@ -283,13 +283,16 @@
             </Row>
             <Divider :class="'ld'" orientation="left">目录分享</Divider>
             <Row>
-                <i-col span="20">
-                    <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
+                <i-col span="20"><a v-on:click="app.selectPath('sharePath')">{{settings.sharePath}}</a>
                 </i-col>
                 <i-col span="4">
-                    <i-switch v-model="settings.sharing" size="small"></i-switch>
+                    <i-switch v-model="settings.sharing" @on-change="(s)=>{if(s)app.openShareUrl();}" size="small"></i-switch>
                 </i-col>
-                <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
+            </Row>
+            <Divider :class="'ld'" orientation="left">接收目录</Divider>
+            <Row>
+                
+                <i-col span="24"><a v-on:click="app.selectPath('downloadPath')">{{settings.downloadPath}}</a>
                 </i-col>
             </Row>
             <Divider :class="'ld'" orientation="left">暗号</Divider>

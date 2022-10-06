@@ -125,7 +125,7 @@ var server = {
             res.end();
             return;
         }
-        var root = runTime.settings.sharePath || utools.getPath('downloads');
+        var root = runTime.settings.sharePath;
         console.log(root);
         var pathname = decodeURI(url.parse(req.url.replace('/share', '/')).pathname);
         var realPath = path.join(root, pathname);
@@ -496,7 +496,7 @@ fs.exists(realPath, function (exists) {
     },
     on_fileAsk: function (req, res) {
         var runData = {};
-        runData.path = utools.getPath('downloads') + path.sep;
+        runData.path = runTime.settings.downloadPath + path.sep;
         runData.name = utils.checkFileExists(runData.path,decodeURI(req.headers.file_name));
         runData.path += runData.name;
         
@@ -532,7 +532,7 @@ fs.exists(realPath, function (exists) {
         var _this = this;
         var runData = {};
         runData.name = decodeURI(req.headers.file_name);
-        var target_file = runData.path = utools.getPath('downloads') + path.sep + runData.name;
+        var target_file = runData.path = runTime.settings.downloadPath + path.sep + runData.name;
         var size = runData.total = parseInt(req.headers['content-length']);
 
         if (fs.existsSync(target_file) && fs.statSync(target_file).isDirectory()) {
