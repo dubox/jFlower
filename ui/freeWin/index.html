@@ -72,21 +72,6 @@
             flex-grow: 1;
         }
 
-        #pull-drawer {
-            width: 20px;
-            height: 100%;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            display: flex;
-            align-items: flex-end;
-            font-size: 20px;
-            opacity: .6;
-        }
-
-        #pull-drawer:hover {
-            opacity: 1;
-        }
 
 
         #history .ivu-card {
@@ -142,31 +127,15 @@
 </head>
 
 <body>
-    <div  style="-webkit-app-region: drag;width: 100%;height: 10px;background-color: #2db7f5;"></div>
+    
     <div id="ui" v-cloak>
-        <Layout class="layout" style="position: absolute;left: 0;top: 0;width: 100%; opacity: 0.5;">
-            <Row type="flex" align="middle">
-
-                <i-col span="8" class="col" align="middle">
-                    <Card :bordered="false" style="width:520px;margin: 50px auto;">
-                        <div style="text-align:center">
-                            <img src="../img/logo.png" width="60%">
-                            <h2 style="color: #19be6b;" v-if="runTime.serverState">Serving At {{runTime.localIp + ':' +runTime.localPort}}</h2>
-                                <h2 style="color:#ed4014;" v-if="!runTime.serverState">Error On {{runTime.localIp}}</h2>
-                        </div>
-                    </Card>
-                </i-col>
-
-            </Row>
-        </Layout>
-        <Layout class="layout" id="history" style="width: 100%; height: 100%;">
-            <Scroll :height="document.documentElement.clientHeight" style="width: 100%;">
-
-                <Row v-for="(item ,index) in _history" :key="index" :s="index" type="flex" align="middle">
-                    <i-col :span="item.type==2 ?(runTime.imgPreView==index ?2:10):2"></i-col>
-                    <i-col span="12" class="col" align="middle">
-                        <i-time :time="item.time" :interval="10" style="color: #9ea7b4;font-size: 12px;"></i-time>
+      
+       
                         <Card>
+                            <div v-if="!item" style="text-align:center">
+                                <img src="../img/logo.png" width="60%">
+                               
+                            </div>
                             <p slot="title" align="left">
 
                                 <Icon v-if="item.type==2" type="ios-paper-plane-outline" size="20"></Icon>
@@ -208,7 +177,7 @@
                             <p v-if="item.contentType=='img'">
                                 <img :src="item.content" style="max-width: 100%;" />
                             </p>
-                            <i-circle v-if="item.contentType=='file'" :size="300" :trail-width="4" :stroke-width="5"
+                            <i-circle v-if="item.contentType=='file'" style="width: 100%;height: 100%;" :trail-width="4" :stroke-width="5"
                                 :percent="Math.round((item.content.transferred/item.content.total)*100)"
                                 stroke-color="#2db7f5">
                                 <div class="file-info">
@@ -230,113 +199,18 @@
                                
                             </i-circle>
                             <a class="op" href="#"  v-if="item.contentType=='file' && item.content.status=='sending'"
-                            @click.prevent="filePause(item)" style="position: absolute;top: 0px;left: 0;width: 100%;height: 332px;background-color: rgba(255, 255, 255, 0.7);">
-                            <Icon type="ios-pause" size="100" style="line-height: 332px;" />
+                            @click.prevent="filePause(item)" style="display: table;position: absolute;top: 0px;left: 0;width: 100%;height: 100%;background-color: rgba(255, 255, 255, 0.7);">
+                            <Icon type="ios-pause" size="100" style="display: table-cell;vertical-align: middle;" />
                         </a>
                             <a class="op" href="#"  v-if="item.contentType=='file' && item.content.status=='paused'"
-                            @click.prevent="fileResume(item)" style="position: absolute;top: 0px;left: 0;width: 100%;height: 332px;background-color: rgba(255, 255, 255, 0.7);">
-                            <Icon type="ios-play" size="100" style="line-height: 332px;" />
+                            @click.prevent="fileResume(item)" style="display: table;position: absolute;top: 0px;left: 0;width: 100%;height: 100%;background-color: rgba(255, 255, 255, 0.7);">
+                            <Icon type="ios-play" size="100" style="display: table-cell;vertical-align: middle;" />
                         </a>
                         </Card>
-                    </i-col>
-                    <i-col :span="item.type==2?2:(runTime.imgPreView==index ?2:10)"></i-col>
-                </Row>
-
-
-            </Scroll>
-
-            <Modal v-model="modal.show" @on-ok="modalOK">
-                <p>{{modal.msg}}</p>
-            </Modal>
-        </Layout>
-        <a href="#" id="pull-drawer" @click.prevent="drawer=true">
-            <!-- <Icon type="md-arrow-dropright"  size="30"/> -->
-            <Icon type="ios-cog-outline" size="35" />
-        </a>
-
-        <Drawer title="Settings" placement="left" :closable="false" v-model="drawer">
-            <Divider :class="'ld'" orientation="left">设置本机名称</Divider>
-            <Row>
-                <i-col span="20">
-                    <i-input  size="small" :value="settings.name" @on-blur="if($event.target.composing)return;settings.name =$event.target.value;"></i-input>
-                </i-col>
-                <i-col span="4">
-                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
-                </i-col>
-            </Row>
-            <Divider :class="'ld'" orientation="left">设置本机IP</Divider>
-            <Row>
-                <i-col span="20">
-                    <i-input  size="small" :value="settings.localIp" @on-blur="if($event.target.composing)return;settings.localIp =$event.target.value;"></i-input>
-                </i-col>
-                <i-col span="4">
-                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
-                </i-col>
-            </Row>
-            <Divider :class="'ld'" orientation="left">扫描其他网段的主机</Divider>
-            <Row>
-                <i-col span="20">
-                    <i-input size="small" style="width: 120px;" :placeHolder="ipPrefix" :value="settings.otherIpSeg" @on-blur="if($event.target.composing)return;settings.otherIpSeg =$event.target.value;"></i-input> .0~255
-                </i-col>
-                <i-col span="4">
-                    <i-button type="info" size="small" @click="app.detect(settings.otherIpSeg)">go</i-button>
-                </i-col>
-            </Row>
-            <Divider :class="'ld'" orientation="left">目录分享</Divider>
-            <Row>
-                <i-col span="20">
-                    <i-button type="info" size="small" @click="app.selectPath()">切换目录</i-button>
-                </i-col>
-                <i-col span="4">
-                    <i-switch v-model="settings.sharing" size="small"></i-switch>
-                </i-col>
-                <i-col span="24"><a v-on:click="app.openShareUrl()">{{settings.sharePath}}</a>
-                </i-col>
-            </Row>
-            <Divider :class="'ld'" orientation="left">暗号</Divider>
-            <Row>
-                <i-col span="20">
-                    <i-input  size="small" :value="settings.findingCode.code" @on-blur="if($event.target.composing)return;settings.findingCode.code =$event.target.value;"></i-input>
-                </i-col>
-                <i-col span="4">
-                    <i-button type="info" size="small" >ok</i-button>
-                </i-col>
-                <i-col span="24">
-                    仅相同暗号的主机可以找到我:<i-switch v-model="settings.findingCode.isOnly" size="small"></i-switch>
-                </i-col>
-            </Row>
-            <Divider :class="'ld'" orientation="left">高级设置</Divider>
-            <Row :title="'若不清楚此项的含义，则保持默认'" :class="'bottom-line'">
-
-                <i-col span="10">设置本机端口:</i-col>
-                <i-col span="14">
-                    <i-input  size="small"  :number="true" :max="65535" :min="0" :step="1" :value="settings.localPort" @on-blur="if($event.target.composing)return;settings.localPort =$event.target.value;"></i-input>
-                </i-col>
-                <i-col span="24" :class="'info'">
-                    点击右上角logo > 完全退出，重新进入方可生效
-                </i-col>
-            </Row>
-            <Row :title="'建议与本机端口保持一致'" :class="'bottom-line'">
-
-                <i-col span="10">设置扫描端口:</i-col>
-                <i-col span="10">
-                    <i-input  size="small"  :number="true" :max="65535" :min="0" :step="1" :value="settings.targetPort" @on-blur="if($event.target.composing)return;settings.targetPort =$event.target.value;"></i-input>
-                </i-col>
-                <i-col span="4">
-                    <i-button type="info" size="small" @click="app.detect()">ok</i-button>
-                </i-col>
-            </Row>
-            <Row>
-                <i-col span="24">
-                    日志:<i-switch v-model="settings.log" size="small"></i-switch>
-                </i-col>
-                <i-col span="24"><a v-on:click="app.showFile(utools.getPath('documents') + '/jflower.log')">{{utools.getPath('documents') + '/jflower.log'}}</a>
-                </i-col>
-            </Row>
-            
-        </Drawer>
+                 
+     
     </div>
-
+<script src="./index.js"></script>
 </body>
 
 </html>

@@ -5,14 +5,15 @@ app.ui = new Vue({
     el: '#ui',
     data: {
         runTime: {
-            fileSend: app.clientRunTime.fileSend,
-            fileReceive: app.serverRunTime.fileReceive,
-            serverState: app.serverState,
-            localIp: app.localIp,
-            history: app.history,
+            //fileSend: app.clientRunTime.fileSend,
+            //fileReceive: app.serverRunTime.fileReceive,
+           // serverState: app.serverState,
+           // localIp: app.localIp,
+           // history: app.history,
             imgPreView:-1
         },
-        settings: app.settings,
+        item:app.h,
+       // settings: app.settings,
         drawer: false,
         modal:{
             show :false,
@@ -185,7 +186,7 @@ app.ui = new Vue({
         }
     }
 });
-
+alert('sss')
 // setTimeout(() => {
 //     app.checkServer(() => {
 //         app.detectDevice();
