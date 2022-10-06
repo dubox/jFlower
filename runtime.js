@@ -8,6 +8,8 @@ const md5 = require('./libs/md5');
 module.exports = {
     init: function () {
         this.localId = utools.getLocalId();
+        this.settings.downloadPath = utools.getPath('downloads');
+        this.settings.sharePath = utools.getPath('downloads');
         this.settings; //加载设置
         console.log(userData)
         this.loadHistory(); //加载历史记录
@@ -71,6 +73,7 @@ module.exports = {
     _settings: {
         log: false,
         sharePath: '',
+        downloadPath: '',
         sharing: false,
         name: os.hostname,
         otherIpSeg: '',
