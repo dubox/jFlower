@@ -468,7 +468,7 @@ var server = {
         res.end();
 
         Utils.addFeature(req.headers.ip, decodeURIComponent(req.headers.name));
-        //Utils.toast(`${req.headers.name}(${req.headers.ip})发现了你`);
+        Utils.toast(`${decodeURIComponent(req.headers.name)}(${req.headers.ip})发现了你`);
 
     },
     on_close: function (req, res) {
@@ -557,12 +557,12 @@ var server = {
             runData.elapsed = 0;
             runData.startTime = (new Date()).getTime();
             runData.status = 'sending';
-            req.onDataListener = (chunk) => {
-                runData.transferred += chunk.length;
-                runData.elapsed = (new Date().getTime()) - runData.startTime;
-                //
-                //ws.write(chunk);
-            };
+            // req.onDataListener = (chunk) => {
+            //     runData.transferred += chunk.length;
+            //     runData.elapsed = (new Date().getTime()) - runData.startTime;
+            //     //
+            //     //ws.write(chunk);
+            // };
 
             // req.on('end', () => {
             //     // console.log('finish:', (new Date()).getTime());
@@ -572,31 +572,39 @@ var server = {
             //     //     utools.shellShowItemInFolder(target_file);
             //     //res.end();
             // });
+            var transferred = runData.transferred;
+            var elapsed = runData.elapsed;
+            var updateProgress = function(status){
+                Object.assign(runData, {
+                    transferred: transferred,
+                    elapsed: elapsed,
+                    status:status?status:runData.status
+                });
+            }
+
             req.on('error', (err) => {
                 console.log('err:', err);
                 runData.status = 'error';
+                updateProgress();
                 runTime.updHistory();
                 // ws.destroy();
             });
             ws.on('error', function (err) {
                 console.log('err:', err);
                 runData.status = 'error';
+                updateProgress();
                 runTime.updHistory();
                 // req.destroy(err);
             });
             
 
-            var transferred = runData.transferred;
-            var elapsed = runData.elapsed;
+            
             let transform = new Transform({
                 transform(chunk, encoding, callback) {
                     transferred += chunk.length;console.log(transferred)
                     elapsed = (new Date().getTime()) - runData.startTime;
                     if (elapsed - runData.elapsed > 200) {
-                        Object.assign(runData, {
-                            transferred: transferred,
-                            elapsed: elapsed
-                        });
+                        updateProgress();
                         if (runData.status == 'paused') {
                             console.log(runData.status);
                             // res.destroy();
@@ -612,6 +620,7 @@ var server = {
                 transform,
                 ws,
                 (err) => {
+                    updateProgress();
                     if (err) {
                         console.log('err:', err);
                         runData.status = 'error';

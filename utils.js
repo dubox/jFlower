@@ -108,7 +108,8 @@ module.exports = {
 
     detectDevice: function (_ipSeg) {
         var _this = this;
-        //this.clearFeatures();
+        if(!_ipSeg)
+        this.clearFeatures();
         var localId = utools.getLocalId();
         var localIp = _this.getLocalIp();
         var ipSeg = localIp.split('.');

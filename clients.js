@@ -55,8 +55,19 @@ module.exports = {
     //rs.pipe(req);
     let transform = new Transform({
       transform(chunk, encoding, callback) {
-          runData.transferred += chunk.length;
-          runData.elapsed = (new Date()).getTime() - runData.startTime;
+          transferred += chunk.length;console.log(transferred)
+                    elapsed = (new Date().getTime()) - runData.startTime;
+                    if (elapsed - runData.elapsed > 200) {
+                        Object.assign(runData, {
+                            transferred: transferred,
+                            elapsed: elapsed
+                        });
+                        if (runData.status == 'paused') {
+                            console.log(runData.status);
+                            // res.destroy();
+                            // rs.destroy();
+                        }
+                    }
           callback(null,chunk);
       }
     });
@@ -120,18 +131,22 @@ module.exports = {
     var elapsed = runData.elapsed;
     let fstat = fs.statSync(runData.path,{throwIfNoEntry:false});
     var transferred = fstat ? fstat.size : 0;
+    var updateProgress = function(status){
+      Object.assign(runData, {
+          transferred: transferred,
+          elapsed: elapsed,
+          status:status?status:runData.status
+      });
+  }
     var req = this.sender('getFile', h.ip, new Buffer('a').length, (err,chunk ,res)=>{
-        
+    
       if(err === 1){
         ws.write(chunk);
         elapsed = (new Date().getTime()) - startTime;
         transferred += chunk.length;
         if(elapsed - runData.elapsed > 200){
-          Object.assign(runData ,{
-            transferred: transferred,
-            elapsed: elapsed
-          });
-          if(runData.status == 'paused'){console.log(runData.status);
+          updateProgress();
+          if(runData.status == 'paused'){
             res.destroy();
             ws.destroy();
           }
@@ -140,9 +155,11 @@ module.exports = {
       }
       else if(err === 0){
           ws.end();
+          updateProgress('completed');
           return;
         }else{console.log(err)
           ws.destroy();
+          updateProgress('paused');
           return;
         }
         
@@ -155,20 +172,12 @@ module.exports = {
       req.write('a', 'utf8', () => {
         req.end();
       }); //
-    ws.on("finish",()=>{console.log(transferred)
-      Object.assign(runData ,{
-        transferred: transferred,
-        elapsed:  elapsed,
-        status: 'completed'
-      });
+    ws.on("finish",()=>{
+      updateProgress('completed');
       utools.shellShowItemInFolder(runData.path);
     });
     ws.on("error",()=>{
-      Object.assign(runData ,{
-        transferred: transferred,
-        elapsed:  elapsed,
-        status: 'paused'
-      });
+      updateProgress('paused');
     });
     //_this.RSpool[key] = [ws];
   },
