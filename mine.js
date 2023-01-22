@@ -12,13 +12,16 @@ exports.types = {
     "png": "image/png",
     "svg": "image/svg+xml",
     "swf": "application/x-shockwave-flash",
+    "sql": "application/sql",
     "tiff": "image/tiff",
     "txt": "text/plain",
+    "md": "text/plain",
     "wav": "audio/x-wav",
     "wma": "audio/x-ms-wma",
     "wmv": "video/x-ms-wmv",
     "mp4": "video/mp4", //mpeg4
     "zip": "application/zip",
     "xml": "text/xml",
+    "yml": "text/plain",
     "default": "text/plain"
 };

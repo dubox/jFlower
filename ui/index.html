@@ -72,11 +72,10 @@
             flex-grow: 1;
         }
 
-        #pull-drawer {
-            width: 20px;
-            height: 100%;
+        .float-btns {
+            /* width: 20px;
+            height: 20px; */
             position: fixed;
-            bottom: 0;
             left: 0;
             display: flex;
             align-items: flex-end;
@@ -84,8 +83,14 @@
             opacity: .6;
         }
 
-        #pull-drawer:hover {
+        .float-btns>.ivu-icon:hover {
             opacity: 1;
+        }
+        #pull-drawer{
+            bottom: 0;
+        }
+        #android{
+            bottom: 40px;
         }
 
 
@@ -248,7 +253,10 @@
                 <p>{{modal.msg}}</p>
             </Modal>
         </Layout>
-        <a href="#" id="pull-drawer" @click.prevent="drawer=true">
+        <a href="#" class="float-btns" id="android" @click.prevent="app.openUrl('https://www.baidu.com')">
+            <Icon type="logo-android" size="35" />
+        </a>
+        <a href="#" class="float-btns" id="pull-drawer" @click.prevent="drawer=true">
             <!-- <Icon type="md-arrow-dropright"  size="30"/> -->
             <Icon type="ios-cog-outline" size="35" />
         </a>
@@ -283,7 +291,9 @@
             </Row>
             <Divider :class="'ld'" orientation="left">目录分享</Divider>
             <Row>
-                <i-col span="20"><a v-on:click="app.selectPath('sharePath')">{{settings.sharePath}}</a>
+                <i-col span="18"><a v-on:click="app.selectPath('sharePath')">{{settings.sharePath}}</a>
+                </i-col>
+                <i-col span="2"><a v-on:click="app.openShareUrl()"><Icon type="ios-open-outline" /></a>
                 </i-col>
                 <i-col span="4">
                     <i-switch v-model="settings.sharing" @on-change="(s)=>{if(s)app.openShareUrl();}" size="small"></i-switch>

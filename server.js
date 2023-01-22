@@ -234,11 +234,60 @@ var server = {
                         res.writeHead(200, {
                             'Content-Type': contentType + ';charset=utf-8'
                         });
-
-                        for (var i in files) {
-                            var u = url.format(url.parse(path.join('/share', pathname, files[i])));
-                            res.write('<a href="' + u + '">' + files[i] + '</a><br>');
+                        res.write(`
+                        <head><meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"></head>
+                        `);
+                        
+                        res.write(`
+                        <style>
+                        body{font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;color:#9ea7b4;}
+                        a {
+                        color:#464c5b;
+                        font-size: 20px;
+                        font-weight: bold;
+                        text-decoration: none;
+                        word-break: break-word;
+                    }
+                    a.dir{color:#3399ff;}
+                    .time ,.size {
+                        color:#9ea7b4;
+                        font-size: 14px;
+                    }
+                    .size{color:#657180;font-weight: bold;}
+                    hr{border: none;
+                        border-bottom: solid 1px #e8eaec;}
+                        </style>
+                        `);
+                        var size_unit=['B','KB','MB','GB'];
+                        function parseSize(size ,i){
+                            return size<1000?size.toFixed(2)+' '+size_unit[i]:parseSize(size/1000 ,i+1);
                         }
+                        files.map(function (fileName) {
+                            if(fileName.indexOf('.')===0)return null;
+                            let stat = fs.statSync(realPath + '/' + fileName);
+                            console.log(stat);
+                            size = stat.size;
+                            return {
+                              name: fileName,
+                              time: stat.mtimeMs,
+                              localTime :(new Date().toLocaleDateString() == stat.mtime.toLocaleDateString()?'':stat.mtime.toLocaleDateString()) +' '+ stat.mtime.toLocaleTimeString('chinese',{hour12:false}),
+                              size:parseSize(size ,0),
+                              isDir:stat.isDirectory()
+                            };
+                          })
+                          .filter((i)=>{return !!i;})
+                          .sort(function (a, b) {
+                            return b.time - a.time; })
+                          .map(function (v) {
+                            res.write(`<br><a ${v.isDir ? `class="dir"`:'' } href="${url.format(url.parse(path.join('/share', pathname, v.name)))}">${v.name}</a>
+                            <br>
+                            ${v.isDir ? '':`[<span class="size">${v.size}</span>]` }
+                            <span class="time">${v.localTime}</span>
+                            <hr>
+                            
+                            `);
+                        });
+                        
                         res.end();
                     }
                 });
