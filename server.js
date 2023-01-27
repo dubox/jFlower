@@ -517,7 +517,7 @@ var server = {
         res.end();
 
         Utils.addFeature(req.headers.ip, decodeURIComponent(req.headers.name));
-        Utils.toast(`${decodeURIComponent(req.headers.name)}(${req.headers.ip})发现了你`);
+        // Utils.toast(`${decodeURIComponent(req.headers.name)}(${req.headers.ip})发现了你`);
 
     },
     on_close: function (req, res) {
