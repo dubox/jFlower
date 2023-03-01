@@ -44,13 +44,13 @@ app.ui = new Vue({
 
         _history: function () {
             var hsy = JSON.parse(JSON.stringify(this.runTime.history));
-            for (let i in hsy) {
-                if (hsy[i].contentType == 'text') {
-                    hsy[i].content = hsy[i].content.replace(/(https{0,1}:\/\/\S+)/g, (match, item) => {
-                        return `<a onclick="app.openUrl('${match}')">${match}</a>`;
-                    });
-                }
-            }
+            // for (let i in hsy) {
+            //     if (hsy[i].contentType == 'text') {
+            //         hsy[i].content = hsy[i].content.replace(/(https{0,1}:\/\/\S+)/g, (match, item) => {
+            //             return `<a onclick="app.openUrl('${match}')">${match}</a>`;
+            //         });
+            //     }
+            // }
 
             return hsy;
         },
@@ -68,6 +68,11 @@ app.ui = new Vue({
         },
         showFile: function (path) {
             app.showFile(path);
+        },
+        parseText: function (text) {
+            return text.replace(/(https{0,1}:\/\/\S+)/g, (match, item) => {
+                return `<a onclick="app.openUrl('${match}')">${match}</a>`;
+            });
         },
         copy: function (content, type) {
             if (app.copy(content, type))

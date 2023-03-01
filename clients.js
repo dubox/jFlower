@@ -260,7 +260,8 @@ module.exports = {
       path: '/' + type,
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'text/plain',
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
         'cmd': type,

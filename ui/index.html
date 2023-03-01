@@ -207,7 +207,7 @@
                                 <Icon type="ios-close-circle-outline" size="20" />
                             </a>
                             <p v-if="item.contentType=='text'">
-                                <span v-html="item.content"></span>
+                                <span v-html="parseText(item.content)"></span>
                             </p>
                             <p v-if="item.contentType=='img'">
                                 <img :src="item.content" style="max-width: 100%;" />
