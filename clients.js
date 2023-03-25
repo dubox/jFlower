@@ -213,11 +213,11 @@ module.exports = {
       time: new Date().getTime()
     });
      //文件名使用url转码，否则中文在header中会有问题
-    var req = this.sender('fileAsk', ip, size, cb, {
+    var req = this.sender('fileAsk', ip, 0, cb, {
       file_name: encodeURI(file.name),
+      file_size: encodeURI(size),
       key: key
     });
-
     req.end();
   },
   sendImg: function (ip, img, cb) {
@@ -265,6 +265,7 @@ module.exports = {
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
         'cmd': type,
+        'name': runTime.hosts[ip].hostName,
         'ip': runTime.localIp,// Utils.getLocalIp(), //注意自定义header的值有符号要求
         'id': runTime.localId,
         'findingCode': runTime.settings.findingCode.code,//server接收到的是小写key：findingcode

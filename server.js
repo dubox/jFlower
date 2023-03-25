@@ -559,7 +559,7 @@ var server = {
         runData.name = utils.checkFileExists(runData.path, decodeURI(req.headers.file_name));
         runData.path += runData.name;
 
-        runData.total = parseInt(req.headers['content-length']);
+        runData.total = parseInt(req.headers.file_size);
         runData.transferred = 0;
         runData.elapsed = 0;
         runData.startTime = (new Date()).getTime();
