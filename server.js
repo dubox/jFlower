@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const Utils = require('./utils');
-const mine = require('./mine').types;
+const mime = require('./mime').types;
 const mp4 = require('./libs/mp4');
 const {
     Transform,
@@ -160,7 +160,7 @@ var server = {
 
                 let ext = path.extname(realPath);
                 ext = ext ? ext.slice(1) : 'unknown';
-                var contentType = mine[ext] || "application/octet-stream";
+                var contentType = mime[ext] || "application/octet-stream";
                 console.log(contentType);
                 if (/(audio|video)/.test(contentType)) {
                     //断点续传，获取分段的位置
@@ -230,7 +230,7 @@ var server = {
                         });
                         res.end(err);
                     } else {
-                        var contentType = mine['html'] || "text/plain";
+                        var contentType = mime['html'] || "text/plain";
                         res.writeHead(200, {
                             'Content-Type': contentType + ';charset=utf-8'
                         });
@@ -319,12 +319,14 @@ var server = {
             var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
             //获取需要读取的文件大小
             var chunksize = (end - start) + 1;
-            console.log(total, end, chunksize)
+            console.log(total, end, chunksize);
+            let ext = path.extname(realPath);
+                ext = ext ? ext.slice(1) : 'unknown';
             res.writeHead(206, {
                 "Content-Range": "bytes " + start + "-" + end + "/" + total,
                 "Accept-Ranges": "bytes",
                 "Content-Length": chunksize,
-                "Content-Type": "application/octet-stream"
+                "Content-Type":  mime[ext] || "application/octet-stream"
             });
 
             var rs = fs.createReadStream(realPath, {
@@ -424,7 +426,7 @@ var server = {
 
                         let ext = path.extname(realPath);
                         ext = ext ? ext.slice(1) : 'unknown';
-                        var contentType = mine[ext] || "application/octet-stream";
+                        var contentType = mime[ext] || "application/octet-stream";
                         console.log(contentType);
                         if (/(audio|video)/.test(contentType)) {
                             //断点续传，获取分段的位置

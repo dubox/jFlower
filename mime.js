@@ -15,6 +15,7 @@ exports.types = {
     "sql": "application/sql",
     "tiff": "image/tiff",
     "txt": "text/plain",
+    "log": "text/plain",
     "md": "text/plain",
     "wav": "audio/x-wav",
     "wma": "audio/x-ms-wma",
