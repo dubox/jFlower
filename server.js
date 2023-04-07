@@ -535,6 +535,7 @@ var server = {
         });
         req.on('end', () => {
             if (/^https{0,1}:\/\/\S+$/.test(rawData)) {
+                utools.copyText(rawData);
                 utools.shellOpenExternal(rawData);
             } else {
                 utools.copyText(rawData);
