@@ -545,7 +545,7 @@ var server = {
             //console.log('ip', req.ip)
             runTime.addHistory({
                 ip: req.headers.ip,
-                hostName: runTime.hosts[req.headers.ip].hostName,
+                hostName: runTime.hosts[req.headers.ip]?runTime.hosts[req.headers.ip].hostName:'',
                 id: '',
                 type: 1, //1 from,2 to
                 content: rawData,
