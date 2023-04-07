@@ -238,7 +238,7 @@ module.exports = {
   },
 
   sendText: function (ip, text, cb) {
-    var req = this.sender('text', ip, new Buffer(text).length, cb);console.log('444')
+    var req = this.sender('text', ip, new Buffer(text).length, cb);
     req.write(text, 'utf8', () => {
       req.end();
     }); //
@@ -265,7 +265,7 @@ module.exports = {
         'Content-Length': data_size,
         //'Transfer-Encoding' : 'chunked',
         'cmd': type,
-        'name': runTime.hosts[ip].hostName,
+        'name': encodeURIComponent(runTime.settings.name),
         'ip': runTime.localIp,// Utils.getLocalIp(), //注意自定义header的值有符号要求
         'id': runTime.localId,
         'findingCode': runTime.settings.findingCode.code,//server接收到的是小写key：findingcode
