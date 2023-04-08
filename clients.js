@@ -144,7 +144,7 @@ module.exports = {
         ws.write(chunk);
         elapsed = (new Date().getTime()) - startTime;
         transferred += chunk.length;
-        if(elapsed - runData.elapsed > 200){
+        if(elapsed - runData.elapsed > 1000){
           updateProgress();
           if(runData.status == 'paused'){
             res.destroy();
