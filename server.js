@@ -342,7 +342,7 @@ var server = {
             rs.on('data', function (chunk) { //console.log('server.data')
                 transferred += chunk.length;
                 elapsed = (new Date().getTime()) - runData.startTime;
-                if (elapsed - runData.elapsed > 1000) {
+                if (elapsed - runData.elapsed > 500) {
                     Object.assign(runData, {
                         transferred: transferred,
                         elapsed: elapsed
@@ -655,7 +655,7 @@ var server = {
                 transform(chunk, encoding, callback) {
                     transferred += chunk.length;console.log(transferred)
                     elapsed = (new Date().getTime()) - runData.startTime;
-                    if (elapsed - runData.elapsed > 1000) {
+                    if (elapsed - runData.elapsed > 500) {
                         updateProgress();
                         if (runData.status == 'paused') {
                             console.log(runData.status);
