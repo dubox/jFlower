@@ -19,6 +19,7 @@ exports.types = {
     "md": "text/plain",
     "wav": "audio/x-wav",
     "wma": "audio/x-ms-wma",
+    "mp3": "audio/mpeg",
     "wmv": "video/x-ms-wmv",
     "mp4": "video/mp4", //mpeg4
     "zip": "application/zip",

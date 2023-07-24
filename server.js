@@ -130,7 +130,7 @@ var server = {
         }
         var root = runTime.settings.sharePath;
         console.log(root);
-        var pathname = decodeURI(url.parse(req.url.replace('/share', '/')).pathname);
+        var pathname = decodeURIComponent(url.parse(req.url.replace('/share', '/')).pathname);
         var realPath = path.join(root, pathname);
         console.log(realPath);
 
@@ -279,7 +279,7 @@ var server = {
                           .sort(function (a, b) {
                             return b.time - a.time; })
                           .map(function (v) {
-                            res.write(`<br><a ${v.isDir ? `class="dir"`:'' } href="${url.format(url.parse(path.join('/share', pathname, v.name)))}">${v.name}</a>
+                            res.write(`<br><a ${v.isDir ? `class="dir"`:'' } href="${url.format(url.parse(path.join('/share', pathname, encodeURIComponent(v.name))))}">${v.name}</a>
                             <br>
                             ${v.isDir ? '':`[<span class="size">${v.size}</span>]` }
                             <span class="time">${v.localTime}</span>
