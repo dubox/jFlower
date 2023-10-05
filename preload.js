@@ -43,8 +43,15 @@ function init(){
 
 utools.onMainPush(({code, type, payload })=>{
     // utils.toast('callback');
-    if(Utils.getLocalIp() != runTime.localIp)
-        Utils.detectDevice();
+    let t = (new Date).getTime()-60*1000; //一分钟检测一次
+    if(t > runTime.lastIpCheckTime){
+        runTime.lastIpCheckTime = t;
+        setTimeout(()=>{
+            if(Utils.getLocalIp() != runTime.localIp)//检测本地ip是否变化
+                Utils.detectDevice();
+        },0);
+    }
+    
     return [];
   }, ({code, type, payload, option })=>{
     console.log('selectCallback')
