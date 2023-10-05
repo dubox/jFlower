@@ -10,6 +10,7 @@ const path = require('path');
 //const { runTime } = require('./clients');
 //console.log(`本机ip：${Utils.getLocalIp()}`);
 const { versions } = require('process');
+const utils = require('./utils');
 console.log(versions);
 
 
@@ -39,6 +40,17 @@ function init(){
 
     });
 }
+
+utools.onMainPush(({code, type, payload })=>{
+    // utils.toast('callback');
+    if(Utils.getLocalIp() != runTime.localIp)
+        Utils.detectDevice();
+    return [];
+  }, ({code, type, payload, option })=>{
+    console.log('selectCallback')
+    console.log(code, type, payload, option)
+    return false;
+  });
 
 utools.onPluginEnter(({
     code,

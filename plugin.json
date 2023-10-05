@@ -4,12 +4,33 @@
 	"author": "dubox",
 	"homepage": "https://github.com/dubox/jFlower",
 	"main": "ui/index.html",
-	"version": "1.5.4",
+	"version": "1.5.5",
 	"logo": "ui/img/logo.png",
 	"features": [{
 			"code": "main",
 			"explain": "jFlower(局发)",
 			"cmds": ["局发", "jFlower"]
+		},
+		{
+			"code": "refresh",
+			"mainPush":true,
+			"explain": "jFlower(局发)",
+			"cmds": [{
+				"type": "over",
+				"label": "jFlower refreshing",
+				"minLength": 1
+			},
+			{
+				"type": "files",
+				"label": "jFlower refreshing",
+				"fileType": "file",
+				"minNum": 1,
+				"maxNum": 1
+			},
+			{
+				"type": "img",
+				"label": "jFlower refreshing"
+			}]
 		}
 
 	],

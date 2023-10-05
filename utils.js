@@ -62,6 +62,7 @@ module.exports = {
         utools.setFeature({
             "code": "" + ip,
             "explain": `发送给：主机名(IP)`,
+            
             // "icon": "res/xxx.png",
             // "icon": "data:image/png;base64,xxx...",
             // "platform": ["win32", "darwin", "linux"]
