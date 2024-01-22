@@ -12,8 +12,8 @@
 			"cmds": ["局发", "jFlower"]
 		},
 		{
-			"code": "refresh",
-			"mainPush":true,
+			"code": "",
+			"mainPush":false,
 			"explain": "jFlower(局发)",
 			"cmds": [{
 				"type": "over",

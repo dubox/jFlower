@@ -17,7 +17,7 @@ const logger = require('./libs/log');
 module.exports = {
     //runTime:runTime.common,
     toast: function (msg, code) {
-        utools.showNotification(msg, 'main'); //
+        utools.showNotification(msg, code || 'main'); //
     },
     //获取内网ip
     getLocalIp: function () {
@@ -27,22 +27,22 @@ module.exports = {
         runTime.localIp = '';
         var level = 0;
         for (let i in nif) {
-                for (let ii in nif[i]) {
-                    if(nif[i][ii].family.toLowerCase() != 'ipv4' || nif[i][ii].internal)continue;
+            for (let ii in nif[i]) {
+                if (nif[i][ii].family.toLowerCase() != 'ipv4' || nif[i][ii].internal) continue;
 
-                    var l = 0;
-                    if(!runTime.localIp)   l = 1;
-                    if(!/^(utun|v)/i.test(i))    l=2;
-                    if(/^192\.168/.test( nif[i][ii].address))    l=3;
-                    if(/^(以太网|en|eth|wlan)/i.test(i))  l=4;
-                    if(nif[i][ii].address == runTime.settings.localIp) l=5;
+                var l = 0;
+                if (!runTime.localIp) l = 1;
+                if (!/^(utun|v)/i.test(i)) l = 2;
+                if (/^192\.168/.test(nif[i][ii].address)) l = 3;
+                if (/^(以太网|en|eth|wlan)/i.test(i)) l = 4;
+                if (nif[i][ii].address == runTime.settings.localIp) l = 5;
 
-                    if(l > level){
-                        level = l;this.log(level);
-                        runTime.localIp = nif[i][ii].address;
-                        if(l==5)return runTime.localIp;
-                    }
+                if (l > level) {
+                    level = l; this.log(level);
+                    runTime.localIp = nif[i][ii].address;
+                    if (l == 5) return runTime.localIp;
                 }
+            }
         }
         if (runTime.settings.localIp)
             this.toast('未找到指定IP:' + runTime.settings.localIp);
@@ -62,7 +62,7 @@ module.exports = {
         utools.setFeature({
             "code": "" + ip,
             "explain": `发送给：主机名(IP)`,
-            
+
             // "icon": "res/xxx.png",
             // "icon": "data:image/png;base64,xxx...",
             // "platform": ["win32", "darwin", "linux"]
@@ -100,29 +100,47 @@ module.exports = {
 
             ]
         });
-        runTime.hosts[ip] = {
-            ip:ip,
-            hostName:name,
-            nativeId:id,
+        runTime.hosts.ips[ip] = {
+            ip: ip,
+            hostName: name,
+            id: id,
+        };
+        runTime.hosts.ids[id] = {
+            ip: ip,
+            hostName: name,
+            id: id,
         };
     },
+    removeFeature:function(ip){
+        utools.removeFeature(ip);
+        let id = runTime.hosts.ips[ip].id;
+        delete runTime.hosts.ips[ip] ,runTime.hosts.ids[id];
+    },
+    
 
-    detectDevice: function (_ipSeg) {
+    detectDevice: function (_ipSeg, onFind, onFinish) {
         var _this = this;
-        if(!_ipSeg)
-        this.clearFeatures();
+        if (!_ipSeg)
+            this.clearFeatures();
         var localId = utools.getLocalId();
         var localIp = _this.getLocalIp();
-        var ipSeg = localIp.split('.');
-        if (typeof _ipSeg == 'undefined') {
-            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
-        } else if (/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(_ipSeg)) {
+        var ipSeg = '';
+        if (/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(_ipSeg)) {
             ipSeg = _ipSeg;
         } else {
-            return;
+            ipSeg = localIp.split('.');
+            ipSeg = ipSeg[0] + '.' + ipSeg[1] + '.' + ipSeg[2];
         }
-        console.log(ipSeg);
         _this.log(ipSeg);
+        let isFind = false;
+        let fetchCount = 0;
+        let fetchFinish = (ip) => {
+            if (++fetchCount >= 255) {
+                onFinish && onFinish(isFind);
+                // _this.toast(ipSeg + '.0~255 扫描完毕！');
+            }
+            // console.log(fetchCount,ip);
+        };
 
         for (let i = 0; i < 256; i++) {
             var ip = ipSeg + '.' + i;
@@ -138,128 +156,36 @@ module.exports = {
                         'name': encodeURIComponent(runTime.settings.name),
                         'findingCode': runTime.settings.findingCode.code
                     },
-                    timeout: 3500,
+                    timeout: 2000,
                 }, (res) => {
                     console.log(ip);
                     console.log('res.headers:', res.headers);
                     _this.log('detectDevice:' + ip);
                     _this.log('res.headers:', res.headers);
 
-                    if (!res.headers.id) return;
-                    _this.addFeature(ip, decodeURIComponent(res.headers.name), res.headers.id);
+                    if (res.headers.id) {
+                        _this.addFeature(ip, decodeURIComponent(res.headers.name), res.headers.id);
+
+                        if (onFind && onFind(ip, res.headers))
+                            isFind = true;
+                    }
+                    
                     res.resume();
-                    if (i == 255) // && typeof _ipSeg != 'undefined'
-                        _this.toast(ipSeg + '.0~255 扫描完毕！');
+                    fetchFinish(i);
                 }).on('timeout', () => {
                     // 必须监听 timeout 事件 并中止请求 否则请求参数中的 timeout 没有效果
                     req.destroy();
+                    // fetchFinish();
                 }).on('error', (err) => {
 
                     utools.removeFeature(ip);
 
-                    if (i == 255) //&& typeof _ipSeg != 'undefined'
-                        _this.toast(ipSeg + '.0~255 扫描完毕！');
+                    fetchFinish(i);
                 });
             })(ip);
         }
         if (typeof _ipSeg == 'undefined' && runTime.settings.otherIpSeg != '')
             this.detectDevice(runTime.settings.otherIpSeg);
-    },
-    detectDevice5: function (_ipSeg) {
-        var _this = this;
-        //this.clearFeatures();
-        var localId = utools.getLocalId();
-        var localIp = _this.getLocalIp();
-        var ipSeg = localIp.split('.');
-        ipSeg = ipSeg[0] + '.' + ipSeg[1];
-
-        console.log(ipSeg);
-
-        for (let j = 0; j < 256; j++) {
-            for (let i = 0; i < 256; i++) {
-                var ip = ipSeg + '.' + j + '.' + i;
-                (function (ip) {
-                    //console.log(ip, '-', new Date().getTime());
-                    const req = http.get(`http://${ip}:8891/detect`, {
-                        //todo 头部增加暗号
-                        headers: {
-                            'ip': localIp,
-                            'id': localId,
-                            'name': runTime.settings.name,
-                            'findingCode': runTime.settings.findingCode.code
-                        },
-                        timeout: 100,
-                    }, (res) => {
-                        console.log(ip);
-                        console.log('res:', res);
-                        if (ip == localIp) return;
-                        
-                        _this.addFeature(ip, res.headers.name, res.headers.id);
-                        res.resume();
-                    }).on('timeout', () => {
-                        req.destroy();
-                    }).on('error', (err) => {
-                        utools.removeFeature(ip);
-                        if (i == 255)
-                            console.log(ip, '-', new Date().getTime());
-                    });
-                })(ip);
-            }
-        }
-    },
-    detectDevice4: function () {
-        if (isMainThread) {
-            const worker = new Worker('./detect.js');
-            worker.on('message', function (data) {
-                console.log('message:', data)
-            });
-        }
-    },
-    detectDevice3: function () {
-
-        var _this = this;
-        this.clearFeatures();
-        var localIp = _this.getLocalIp();
-        var ipSeg = localIp.split('.');
-        ipSeg.pop();
-        ipSeg.pop();
-        var ips = [];
-        const context = {
-            ips: [],
-            ipSeg: ipSeg,
-            localIp: localIp,
-            http: http,
-            utools: utools
-        };
-        vm.createContext(context); //return;
-        code = `for (let j = 0; j < 256; j++) {
-            for (let i = 0; i < 256; i++) {
-                var ip = ipSeg.join('.') + '.' + j + '.' + i;
-                (function (ip) {
-                    http.get('http://'+ip+':8891/detect', {
-                        headers: {
-                            'ip': localIp,
-                            'id': utools.getLocalId()
-                        }
-                    }, (res) => {
-                        console.log(ip);
-                        console.log('res:', res);
-                        if (ip == localIp) return;
-                        ips.push(ip);
-                        _this.addFeature(ip, res.headers.id);
-                        res.resume();
-                    }).on('error', (err) => {});
-                })(ip);
-
-            }
-        }`;
-        try {
-            vm.runInContext(code, context);
-            console.log('vm:', context);
-        } catch (e) {
-            console.log(e);
-        }
-        return ips;
     },
 
     getPlatform: function () {
@@ -281,7 +207,7 @@ module.exports = {
     },
 
     log(...logs) {
-        console.log(runTime.settings.log,...logs);
+        console.log(runTime.settings.log, ...logs);
         if (!runTime.settings.log) return;
         logger.log(`[${new Date().toLocaleString()}]`, ...logs);
     },
@@ -302,10 +228,10 @@ module.exports = {
         });
     },
 
-    checkFileExists(path ,name){
-        if(fs.existsSync(path+name)){
+    checkFileExists(path, name) {
+        if (fs.existsSync(path + name)) {
             //如果文件存在则重命名文件
-            return this.checkFileExists(path ,'1_'+name);
+            return this.checkFileExists(path, '1_' + name);
         }
         return name;
     }

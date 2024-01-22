@@ -68,7 +68,7 @@ module.exports = {
     localIp: '', //Utils.getLocalIp(),
     localId: '',
     platform: '', //Utils.getPlatform(),
-    hosts:{},   //记录连接到本机的主机
+    hosts:{ids:{},ips:{}},   //记录连接到本机的主机
     lastIpCheckTime:0,  //最后一次本地ip校对时间
 
     _settings: {

@@ -41,23 +41,37 @@ function init(){
     });
 }
 
-utools.onMainPush(({code, type, payload })=>{
-    // utils.toast('callback');
-    let t = (new Date).getTime()-60*1000; //一分钟检测一次
-    if(t > runTime.lastIpCheckTime){
-        runTime.lastIpCheckTime = t;
-        setTimeout(()=>{
-            if(Utils.getLocalIp() != runTime.localIp)//检测本地ip是否变化
-                Utils.detectDevice();
-        },0);
-    }
+// setInterval(()=>{
+//     if(Utils.getLocalIp() != runTime.localIp)//检测本地ip是否变化
+//         Utils.detectDevice();
+// },10*1000);
+
+
+// utools.onMainPush(({code, type, payload })=>{
+//     // utils.toast('callback');
+//     let t = (new Date).getTime()-60*1000; //一分钟检测一次
+//     if(t > runTime.lastIpCheckTime){
+//         runTime.lastIpCheckTime = t;
+//         setTimeout(()=>{
+//             if(Utils.getLocalIp() != runTime.localIp)//检测本地ip是否变化
+//                 Utils.detectDevice();
+//         },0);
+//     }
     
-    return [];
-  }, ({code, type, payload, option })=>{
-    console.log('selectCallback')
-    console.log(code, type, payload, option)
-    return false;
-  });
+//     return [];
+//   }, ({code, type, payload, option })=>{
+//     console.log('selectCallback')
+//     console.log(code, type, payload, option)
+//     return false;
+//   });
+
+function checkNetwork(cb){
+    if(Utils.getLocalIp() != runTime.localIp){
+        Utils.detectDevice('',0,cb);
+    }else{
+        cb && cb();
+    }
+}
 
 utools.onPluginEnter(({
     code,
@@ -69,15 +83,22 @@ utools.onPluginEnter(({
     Utils.log('用户进入插件', code, type, payload);
 
     if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)) {
-
-        if (type == 'files') {
-            Clients.sendFileAsk(code, payload, Clients.sentCallback);
-        } else if (type == 'img') {
-            Clients.sendImg(code, payload, Clients.sentCallback);
-        } else {
-            Clients.sendText(code, payload, Clients.sentCallback);
-        }
-
+        let ip = code;
+        let id = runTime.hosts.ips[ip].id;
+        checkNetwork(()=>{
+            if(!runTime.hosts.ids[id]){
+                utools.toast('目标主机未找到，请尝试重连');
+                return;
+            }
+            let ip = runTime.hosts.ids[id].ip;
+            if (type == 'files') {
+                Clients.sendFileAsk(ip, payload, Clients.sentCallback);
+            } else if (type == 'img') {
+                Clients.sendImg(ip, payload, Clients.sentCallback);
+            } else {
+                Clients.sendText(ip, payload, Clients.sentCallback);
+            }
+        });
     } else {
        init();
     }
