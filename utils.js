@@ -57,6 +57,7 @@ module.exports = {
                 utools.removeFeature(f[i].code);
             }
         }
+        runTime.hosts.ips = {} ;runTime.hosts.ids = {};
     },
     addFeature: function (ip, name, id) {
         utools.setFeature({
@@ -118,7 +119,7 @@ module.exports = {
     },
     
 
-    detectDevice: function (_ipSeg, onFind, onFinish) {
+    detectDevice: function (_ipSeg, onFind, onFinish) {console.log('detectDevice');
         var _this = this;
         if (!_ipSeg)
             this.clearFeatures();

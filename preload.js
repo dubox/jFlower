@@ -17,7 +17,7 @@ console.log(versions);
 window.fs = fs;
 var initTime = 0;//(new Date()).getTime();
 
-function init(){
+function init(){console.log('init');
 
     if(Math.abs((new Date()).getTime() - initTime) < 5000)return;
     initTime = (new Date()).getTime();
@@ -25,7 +25,6 @@ function init(){
     window.app.ui.runTime.serverState = false;
     Server.check(() => {
         console.log('server check ok');
-        Utils.log('server check ok');
         setTimeout(function () {
             try {
                 Utils.detectDevice();
@@ -66,8 +65,14 @@ function init(){
 //   });
 
 function checkNetwork(cb){
-    if(Utils.getLocalIp() != runTime.localIp){
-        Utils.detectDevice('',0,cb);
+    Utils.log('checkNetwork',runTime.localIp);
+    console.log('checkNetwork',runTime.localIp);
+    let currIp = runTime.localIp;
+    let ip = Utils.getLocalIp();
+    Utils.log('checkNetwork', ip,currIp);
+    console.log('checkNetwork', ip,currIp);
+    if(ip != currIp){
+        Utils.detectDevice(0,0,cb);
     }else{
         cb && cb();
     }
@@ -80,14 +85,13 @@ utools.onPluginEnter(({
     optional
 }) => {
     console.log('用户进入插件', code, type, payload);
-    Utils.log('用户进入插件', code, type, payload);
 
-    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)) {
+    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(code)) {console.log('a')
         let ip = code;
-        let id = runTime.hosts.ips[ip].id;
-        checkNetwork(()=>{
+        let id = runTime.hosts.ips[ip].id;console.log(runTime.hosts.ips);
+        checkNetwork(()=>{console.log('checkNetwork',runTime.hosts.ids);
             if(!runTime.hosts.ids[id]){
-                utools.toast('目标主机未找到，请尝试重连');
+                Utils.toast('目标主机未找到，请尝试重连');
                 return;
             }
             let ip = runTime.hosts.ids[id].ip;
@@ -99,7 +103,7 @@ utools.onPluginEnter(({
                 Clients.sendText(ip, payload, Clients.sentCallback);
             }
         });
-    } else {
+    } else {console.log('b')
        init();
     }
     //滚动到列表底部
